@@ -1,0 +1,57 @@
+---
+title: "TILM3520 Harjoitustyö"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Ladataan data
+read
+```
+
+Kurssin loputtua projektista on valmiina raportti, joka sisältää 
+
+*	tutkimuskysymyksen kuvauksen
+*	aineiston kuvauksen
+*	käytettyjen menetelmien kuvauksen 
+*	menetelmien teoreettista taustaa
+*	mallien rakentamisen periaatteet
+*	mallien diagnostiikan
+*	tulosten tulkinnan
+
+Kaikille: Tarkastele ensin kahden muuttujan assosiaatiota ja sen jälkeen kolmannen muuttujan vaikutusta tähän assosiaatioon.
+
+Kaikkien kysymysten taustamuuttujina voi käyttää tavanomaisia demografisia tekijöitä kuten vastaajan ikä, sukupuoli, koulutustaso jne.
+
+Tutustukaa myös tiedostoon ”Guide to weighting of ESS data”. 
+
+Voi myös vaihtaa aihetta jos löytää itseään kiinnostavamman kysymyksen, kunhan mukana on kahden ilmiön assosiaatio ja sen muutos kolmannen suhteen
+
+9.	Ilmastonmuutos ja vastuut
+
+D23. To what extent do you feel a personal responsibility to try to reduce climate change?
+
+D28. How likely do you think it is that governments in enough countries will take action that reduces climate change?
+
+Miten näiden kysymysten yhteys muuttuu kun vastaajan käsitys ilmastonmuutoksen syistä huomioidaan?
+
+D22. Do you think that climate change is caused by natural processes, human activity, or both?
+Työryhmä 9: Rintakumpu, Manelius
+
+
+```{r}
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
