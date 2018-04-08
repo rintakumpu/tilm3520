@@ -1,21 +1,48 @@
 ---
-title: "TILM3520 Harjoitustyö"
-output: html_document
+title: "Ilmastonmuutos ja vastuut"
+subtitle: "Yleistetyt lineaariset -mallit kurssin harjoitustyö, kevät 2018"
+author: "Erik Manelius & Lasse Rintakumpu"
+lang: fi
+header-includes:
+   - \usepackage{color}
+urlcolor: blue   
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+\setlength\parindent{24pt}
+\setlength\parskip{3pt}
+
+```{r setup, include=FALSE, cache=FALSE}
+#Knitr-asetukset
+knitr::opts_chunk$set(echo = FALSE, fig.width=3, fig.height=2.8, fig.show='hold', fig.align='center', warning = FALSE, cache = TRUE, cache.path = 'output/cache/', fig.path = 'output/figures/')
+
+# SPSS-importia varten
+library(foreign)
+
+# PDF:n luomiseen
+library(knitr)
+library(pander)
 ```
 
 ```{r}
 # Ladataan data
-read
+round8 <- read.spss("ESS8e01.sav",to.data.frame=TRUE)
+# Subsetataan data harjoitustyötä varten
+sround8_subset <- subset(round8, round8$cntry=="Finland")
 ```
+
+TODO:
 
 Kurssin loputtua projektista on valmiina raportti, joka sisältää 
 
 *	tutkimuskysymyksen kuvauksen
 *	aineiston kuvauksen
+
 *	käytettyjen menetelmien kuvauksen 
 *	menetelmien teoreettista taustaa
 *	mallien rakentamisen periaatteet
@@ -40,18 +67,3 @@ Miten näiden kysymysten yhteys muuttuu kun vastaajan käsitys ilmastonmuutoksen
 
 D22. Do you think that climate change is caused by natural processes, human activity, or both?
 Työryhmä 9: Rintakumpu, Manelius
-
-
-```{r}
-
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
