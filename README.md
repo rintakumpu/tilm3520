@@ -6,11 +6,11 @@ Tämä Git-repository pitää sisällään sekä harjoitustyön aineiston että 
 
 Itse harjoitustyö  on [R Notebook](https://rmarkdown.rstudio.com/r_notebooks.html) -tiedostossa [`Harjoitystyo.Rmd`](https://github.com/rintakumpu/tilm3520/blob/master/Harjoitustyo.Rmd). Työ kääntyy Notebookista [Pandocin](https://pandoc.org/)/[Knitrn](https://yihui.name/knitr/) avulla PDF:ksi valitsemalla R-Studion File-valikosta "Knit Document".
 
-## Työn kuvaus/ohejistus
+## Työn kuvaus/ohjeistus
 
 ## Ohjeita Gitiin ja Markdowniin
 
-Atlassianin [Git-tutoriaalit](https://www.atlassian.com/git/tutorials/) ovat aika selkeästi kirjoitettuja. Tällaisessa kahden hengen pienessä projektissa tuskin mitään "edistyksellisempiä" toimintoja tarvitaan. Eli perus *pull-commit-push workflow* riittää. 
+Atlassianin [Git-tutoriaalit](https://www.atlassian.com/git/tutorials/) ovat aika selkeästi kirjoitettuja. Tällaisessa kahden hengen pienessä projektissa tuskin mitään "edistyksellisempiä" toimintoja tarvitaan. Eli perus *pull-commit-push* workflow riittää. 
 
 Tarvittaessa voi joutua jotain konflikteja selvittelemään *pullia* ottaessa. Atlassianin [Sourcetreessä](https://www.sourcetreeapp.com/) pitäisi muistaakseni olla työkalut tähän valmiina. tätä ohjelmaa käytän itsekin lähes kaikkien git-projektien hallintaan. Siitä kannattaa siis aloittaa.
 
