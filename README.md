@@ -10,9 +10,9 @@ Itse harjoitustyö  on [R Notebook](https://rmarkdown.rstudio.com/r_notebooks.ht
 
 ## Ohjeita Gitiin ja Markdowniin
 
-Atlassianin [Git-tutoriaalit](https://www.atlassian.com/git/tutorials/) ovat aika selkeästi kirjoitettuja. Tällaisessa kahden hengen pienessä projektissa tuskin mitään "edistyksellisempiä" toimintoja tarvitaan. Eli perus *pull-commit-push* workflow riittää. 
+Gitin käyttäminen kannattaa aloittaa lataamalla jokin sovellus, joka tarjoaa Gitille graafisen käyttöliittymän. Itse käytän Atlassianin [Sourcetreetä](https://www.sourcetreeapp.com/) lähes kaikkien git-projektieni hallintaan.
 
-Tarvittaessa voi joutua jotain konflikteja selvittelemään *pullia* ottaessa. Atlassianin [Sourcetreessä](https://www.sourcetreeapp.com/) pitäisi muistaakseni olla työkalut tähän valmiina. tätä ohjelmaa käytän itsekin lähes kaikkien git-projektien hallintaan. Siitä kannattaa siis aloittaa.
+Myös Atlassianin [Git-tutoriaalit](https://www.atlassian.com/git/tutorials/) ovat aika selkeästi kirjoitettuja. Tällaisessa kahden hengen pienessä projektissa tuskin mitään "edistyksellisempiä" toimintoja tarvitaan. Eli perus *pull-commit-push* workflow riittää. Tarvittaessa voi joutua jotain konflikteja selvittelemään *pullia* ottaessa.  Sourcetreessä pitäisi muistaakseni olla työkalut tähän valmiina. 
 
 RStudiosta löytyy myös suoraan git-integraatio, mikä on varmasti myös hyvä vaihtoehto, mutta sitä en ole oikeastaan koskaan käyttänyt. [Täällä ohjeita](https://support.rstudio.com/hc/en-us/articles/200532077-Version-Control-with-Git-and-SVN). 
 
