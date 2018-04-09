@@ -4,7 +4,7 @@
 
 Tämä Git-repository pitää sisällään sekä harjoitustyön aineiston että datan. Koko *Round 8* -aineisto on SPSS-tiedostossa `ESS8e01.sav`. Harjoitustyö kannattaa avata avaamalla R-projektitiedosto `Harjoitustyo.Rproj` RStudiossa, jolloin työhakemistot menevät suoraan paikoilleen ja tiedostot löytyvät suoraan RStudion Files-täbistä. 
 
-Itse harjoitustyö  on [R Notebook](https://rmarkdown.rstudio.com/r_notebooks.html) -tiedostossa [`Harjoitystyo.Rmd`](https://github.com/rintakumpu/tilm3520/blob/master/Harjoitustyo.Rmd). Työ kääntyy Notebookista [Pandocin](https://pandoc.org/)/[Knitrn](https://yihui.name/knitr/) avulla PDF:ksi valitsemalla R-Studion File-valikosta "Knit Document".
+Varsinainen harjoitustyö  on [R Notebook](https://rmarkdown.rstudio.com/r_notebooks.html) -tiedostossa [`Harjoitystyo.Rmd`](https://github.com/rintakumpu/tilm3520/blob/master/Harjoitustyo.Rmd). Työ kääntyy Notebookista [Pandocin](https://pandoc.org/)/[Knitrn](https://yihui.name/knitr/) avulla PDF:ksi valitsemalla R-Studion File-valikosta "Knit Document". Itse yleensä käännän projektin PDF:ksi suht usein, koska on siinä muodossa paremmin luettavissa.
 
 ## Työn kuvaus/ohjeistus
 
