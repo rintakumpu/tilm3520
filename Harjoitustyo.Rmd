@@ -11,7 +11,6 @@ output:
     toc: true
     toc_depth: 2
     number_sections: true
-
 ---
 
 \setlength\parindent{24pt}
@@ -27,14 +26,90 @@ library(foreign)
 # PDF:n luomiseen
 library(knitr)
 library(pander)
+
+# Reshape löytyy täältä
+library(MASS)
 ```
 
 ```{r}
 # Ladataan data
-round8 <- read.spss("ESS8e01.sav",to.data.frame=TRUE)
+round8 <- read.spss("ESS8e01.sav", to.data.frame=TRUE)
+
 # Subsetataan data harjoitustyötä varten
-sround8_subset <- subset(round8, round8$cntry=="Finland")
+round8_subset <- subset(round8, round8$cntry=="Finland")
+round8_variables <- c("ccnthum","ccrdprs","gvsrdcc","gndr", "agea", "edulvlb", "hinctnta", "lrscale")
+round8_subset <- round8_subset[round8_variables]
+
+round8_new_variable_names <- c("caused_by","personal_responsibility","government_action","gender","age","education","income","politics")
+
+# Tiputetaan havainnot joissa kysymysmuuttujissa puuttuvia havaintoja
+round8_subset <- round8_subset[complete.cases(round8_subset),]
 ```
+
+
+```{r}
+#summary(round8_subset)
+round8_numeric <- cbind(as.data.frame(sapply(round8_subset[1:4], as.numeric)), round8_subset[5:8])
+round8_numeric <- cbind(round8_numeric[1:5], as.data.frame(sapply(round8_numeric[6:8], as.numeric)))
+round8_numeric <- cbind(round8_numeric[1:4], as.numeric(as.character(round8_numeric$age)), round8_numeric[6:8])
+colnames(round8_numeric) <- round8_new_variable_names
+
+#mean(round8_numeric$caused_by)
+#mean(round8_numeric$personal_responsibility)
+#mean(round8_numeric$government_action)
+#var(round8_numeric$caused_by)
+#var(round8_numeric$personal_responsibility)
+#var(round8_numeric$government_action)
+#hist(round8_numeric[,2])
+```
+
+```{r}
+round8_numeric$age <- cut(round8_numeric$age, breaks=c(0, 29, 44, 64, Inf), labels=paste(1:4, sep=""))
+round8_numeric$government_action <- cut(round8_numeric$government_action, breaks=5, labels=FALSE)
+round8_numeric$personal_responsibility <- cut(round8_numeric$personal_responsibility, breaks=5, labels=FALSE)
+round8_numeric_freq <- as.data.frame(xtabs( ~ government_action + gender + personal_responsibility + age, round8_numeric))
+
+round8 <- reshape(round8_numeric_freq, timevar = "personal_responsibility", idvar = c("government_action", "gender", "age"), direction = "wide")
+round8 <- round8[-c(10),]
+```
+
+```{r}
+#Kumulatiivinen logit-mallit
+Cumulativlog <- vglm(cbind(Freq.1,Freq.2,Freq.3,Freq.4,Freq.5) ~ government_action+gender+age, family=cumulative(parallel=TRUE), data=round8)
+summary(Cumulativlog)
+AIC(Cumulativlog)
+BIC(Cumulativlog)
+
+
+#Adjacent-categories logit-malli
+AdjCatLogit <- vglm(cbind(Freq.1,Freq.2,Freq.3,Freq.4,Freq.5) ~ government_action+gender+age, family=acat(parallel=TRUE), data=round8)
+summary(AdjCatLogit)
+AIC(AdjCatLogit)
+BIC(AdjCatLogit)
+
+#Continuation-Ratio logit-malli
+ConRatLogit <- vglm(cbind(Freq.1,Freq.2,Freq.3,Freq.4,Freq.5) ~ government_action+gender+age, family=cratio(parallel=TRUE), data=round8)
+summary(ConRatLogit)
+AIC(ConRatLogit)
+BIC(ConRatLogit)
+
+
+#Kumulatiivinen probit-malli
+CumulativeProbit <- vglm(cbind(Freq.1,Freq.2,Freq.3,Freq.4,Freq.5) ~ government_action+gender+age, family=cumulative(link=probit, parallel=TRUE), data=round8)
+summary(CumulativeProbit)
+AIC(CumulativeProbit)
+BIC(CumulativeProbit)
+
+
+#Kumulatiivinen clog-log-malli
+CumulativeCloglog <- vglm(cbind(Freq.1,Freq.2,Freq.3,Freq.4,Freq.5) ~ government_action+gender+age, family=cumulative(link=cloglog, parallel=TRUE), data=round8)
+summary(CumulativeCloglog)
+AIC(CumulativeCloglog)
+BIC(CumulativeCloglog)
+```
+
+
+
 
 TODO:
 
