@@ -16,6 +16,7 @@ output:
 \setlength\parindent{24pt}
 \setlength\parskip{3pt}
 
+
 ```{r setup, include=FALSE, cache=FALSE}
 #Knitr-asetukset
 knitr::opts_chunk$set(echo = FALSE, fig.width=3, fig.height=2.8, fig.show='hold', fig.align='center', warning = FALSE, cache = TRUE, cache.path = 'output/cache/', fig.path = 'output/figures/')
@@ -31,32 +32,63 @@ library(pander)
 library(MASS)
 ```
 
+# Johdanto
+
+Analyysityössämme tarkastelemme *[European Social Surveyn](http://ess.nsd.uib.no/)* 8. kierroksen aineiston (ESS 2016) pohjalta millaisena suomalaiset kokevat henkilökohtaisen vastuunsa ilmastonmuutoksen hillitsemisestä. 
+
+*European Social Survey* on tieteellisistä lähtökohdista toteutettava vertaileva kyselytutkimus, joka kattaa yli 30 Euroopan ja lähialueiden maata. ESS kartoittaa Euroopan maiden yhteiskunnallisen muutoksen ja väestön asenteiden, uskomusten ja käyttäytymisen välisiä suhteita. Suomessa tutkimus tunnetaan myös nimellä *Arvot ja mielipiteet Suomessa*. 
+
+Tutkimus on toteutettu Tilastokeskuksen ja Turun yliopiston yhteistyönä. Tutkimukseen on poimittu satunnaisesti 3 400 yli 15-vuotiasta suomalaista. Jokainen haastateltava edustaa vastauksillaan noin 1 300 suomalaista. \footnotemark  
+
+\footnotetext{Tilastokeskus: "Arvot ja mielipiteet Suomessa -tutkimus (ESS)", https://www.stat.fi/tup/htpalvelut/tutkimukset/arvot-ja-mielipiteet-suomessa-tutkimus-ess.html, haettu 6.5.2018.}
+
+# Aineiston ja tutkimuskysymyksen kuvaus
+
 ```{r}
 # Ladataan data
 round8 <- read.spss("ESS8e01.sav", to.data.frame=TRUE)
 
-# Subsetataan data harjoitustyötä varten
+# Subsetataan Suomen data harjoitustyötä varten
 round8_subset <- subset(round8, round8$cntry=="Finland")
+
+# Valitaan muuttujat
 round8_variables <- c("ccnthum","ccrdprs","gvsrdcc","gndr", "agea", "edulvlb", "hinctnta", "lrscale")
 round8_subset <- round8_subset[round8_variables]
 
+# Annetaan muuttujille inhimillisemmät nimet
 round8_new_variable_names <- c("caused_by","personal_responsibility","government_action","gender","age","education","income","politics")
 
-# Tiputetaan havainnot joissa kysymysmuuttujissa puuttuvia havaintoja
-round8_subset <- round8_subset[complete.cases(round8_subset),]
+colnames(round8_subset) <- round8_new_variable_names
 ```
 
+Suomen aineisto sisältää $n = 1925$ tilastoyksikköä, joilta kultakin on kerättyä tietoa $499$ muuttujasta. Tutkiessamme suomalaisten henkilökohtaista ilmastovastuuta päämielenkiintomme kohdistuu muuttujaan `D23. To what extent do you feel a personal responsibility to try to reduce climate change?`. 
 
+D28. How likely do you think it is that governments in enough countries will take action that reduces climate change?
+Miten näiden kysymysten yhteys muuttuu kun vastaajan käsitys ilmastonmuutoksen syistä huomioidaan?
+
+D22. Do you think that climate change is caused by natural processes, human activity, or both?
+
+Lisäksi hyödynnämme analyysissa ... Tutkitaan lisäksi taustamuuttujien vaikutusta,  ikä, koulutus, sukupuoli, poliittinen suuntautuminen. Descriptive stuff goes here.
+
+Näiden perusteella valitaan ...
+
+# Mallintaminen
+
+Koska ... vähennetään luokkia. 
+
+*	käytettyjen menetelmien kuvauksen 
+*	menetelmien teoreettista taustaa
+*	mallien rakentamisen periaatteet
+*	mallien diagnostiikan
 
 ```{r}
-# Muuttujien välisen korralaation tarkastelu (lähinnä taustamuuttujien tarkastelua varten)
-cor(round8_numeric)
+# Tiputetaan havainnot joissa kysymysmuuttujissa puuttuvia havaintoja
+ round8_subset <- round8_subset[complete.cases(round8_subset),]
 ```
-
 
 *	tutkimuskysymyksen kuvauksen
 
-halutaan tutkia millaisena ihmiset kokevat henkilökohtaisen vastuunsa ilmastonmuutoksen hillitsemisestä (=> D23. To what extent do you feel a personal responsibility to try to reduce climate change?). Miten se, kuinka kokee tekevätkö tarpeeksi monen maan hallitukset töitä ilmastonmuutoksen hillitsemiseksi on yhteydessä ihmisen kokemaan henkilökohtaisen vaastuuseen ilmastonmuutoksesta (D28. How likely do you think it is that governments in enough countries will take action that reduces climate change?).
+halutaan tutkia  (=> D23. To what extent do you feel a personal responsibility to try to reduce climate change?). Miten se, kuinka kokee tekevätkö tarpeeksi monen maan hallitukset töitä ilmastonmuutoksen hillitsemiseksi on yhteydessä ihmisen kokemaan henkilökohtaisen vaastuuseen ilmastonmuutoksesta (D28. How likely do you think it is that governments in enough countries will take action that reduces climate change?).
 
 Tarkastellaan Suomen aineistoa
 
@@ -64,8 +96,6 @@ Molemmat muuttujat ordinaalisia,
 henkilökohtainen vastuu 0-10 (11 luokkaa),
 tarpeeksi monen maan hallituksen toimet 0-10 (11 luokkaa)
 => logit malli, koska ordinaalinen, kumulatiivinen logit
-Tutkitaan lisäksi taustamuuttujien vaikutusta, 
-ikä, koulutus, sukupuoli, poliittinen suuntautuminen
 
 Kolmiluokkainen vaikuttaa järkevältä, (tähän varmaan perusteet miksi tehty),
 luokitellaan 4-3-4.
@@ -75,7 +105,7 @@ muutoksen syy 1-5 (5 luokkaa); 1: kokonaan luonnollinen - 5: kokonaan ihmisen ai
 D22. Do you think that climate change is caused by natural processes, human activity, or both?
 
 
-```{r}
+```{r eval=FALSE}
 round8_numeric <- cbind(as.data.frame(sapply(round8_subset[1:4], as.numeric)), round8_subset[5:8])
 round8_numeric <- cbind(round8_numeric[1:5], as.data.frame(sapply(round8_numeric[6:8], as.numeric)))
 round8_numeric <- cbind(round8_numeric[1:4], as.numeric(as.character(round8_numeric$age)), round8_numeric[6:8])
@@ -102,7 +132,7 @@ round8 <- reshape(round8_numeric_freq, timevar = "personal_responsibility", idva
 #round8 <- round8[-c(10),]
 ```
 
-```{r}
+```{r eval=FALSE}
 # Kaikki muuttujat
 Fullcumulativlog <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*income*gender*age, family=cumulative(parallel=TRUE), data=round8)
 summary(Fullcumulativlog)
@@ -117,7 +147,7 @@ AIC(Cumulativlog)
 BIC(Cumulativlog)
 ```
 
-```{r}
+```{r eval=FALSE}
 round8_numeric_freq2 <- as.data.frame(xtabs( ~ government_action + caused_by + personal_responsibility + gender + age, round8_numeric))
 round8_2 <- reshape(round8_numeric_freq2, timevar = "personal_responsibility", idvar = c("government_action", "caused_by", "gender", "age"), direction = "wide")
 rownames(round8_2) <- 1:dim(round8_2)[1]
@@ -130,7 +160,7 @@ AIC(Cumulativlog2)
 BIC(Cumulativlog2)
 ```
 
-```{r}
+```{r eval=FALSE}
 round8_numeric_freq3 <- as.data.frame(xtabs( ~ government_action + personal_responsibility + gender, round8_numeric))
 round8_3 <- reshape(round8_numeric_freq3, timevar = "personal_responsibility", idvar = c("government_action","gender"), direction = "wide")
 #rownames(round8_2) <- 1:dim(round8_2)[1]
@@ -144,8 +174,7 @@ BIC(Cumulativlog3)
 
 ```
 
-
-```{r}
+```{r eval=FALSE}
 
 
 #Adjacent-categories logit-malli
@@ -176,25 +205,10 @@ BIC(CumulativeCloglog)
 
 ```
 
-
-
-TODO:
-
-Kurssin loputtua projektista on valmiina raportti, joka sisältää 
-
-
-*	aineiston kuvauksen
-*	käytettyjen menetelmien kuvauksen 
-*	menetelmien teoreettista taustaa
-*	mallien rakentamisen periaatteet
-*	mallien diagnostiikan
-*	tulosten tulkinnan
+# Tulosten tulkinta ja johtopäätökset
 
 Kaikille: Tarkastele ensin kahden muuttujan assosiaatiota ja sen jälkeen kolmannen muuttujan vaikutusta tähän assosiaatioon.
 
 Kaikkien kysymysten taustamuuttujina voi käyttää tavanomaisia demografisia tekijöitä kuten vastaajan ikä, sukupuoli, koulutustaso jne.
 
 Tutustukaa myös tiedostoon ”Guide to weighting of ESS data”. 
-
-Voi myös vaihtaa aihetta jos löytää itseään kiinnostavamman kysymyksen, kunhan mukana on kahden ilmiön assosiaatio ja sen muutos kolmannen suhteen
-
