@@ -8,6 +8,7 @@ header-includes:
 urlcolor: blue   
 output:
   pdf_document:
+    fig_caption: yes
     toc: true
     toc_depth: 2
     number_sections: true
@@ -30,6 +31,12 @@ library(pander)
 
 # Reshape löytyy täältä
 library(MASS)
+
+# Puuttuva datan käsittely
+library(MissMech)
+
+# Nätimmät plotit
+library(ggplot2)
 ```
 
 # Johdanto
@@ -47,7 +54,9 @@ Tutkimus on toteutettu Tilastokeskuksen ja Turun yliopiston yhteistyönä. Tutki
 ```{r}
 # Ladataan data
 round8 <- read.spss("ESS8e01.sav", to.data.frame=TRUE)
+```
 
+```{r}
 # Subsetataan Suomen data harjoitustyötä varten
 round8_subset <- subset(round8, round8$cntry=="Finland")
 
@@ -57,53 +66,70 @@ round8_subset <- round8_subset[round8_variables]
 
 # Annetaan muuttujille inhimillisemmät nimet
 round8_new_variable_names <- c("caused_by","personal_responsibility","government_action","gender","age","education","income","politics")
-
 colnames(round8_subset) <- round8_new_variable_names
+
+# Ja käännetään levelit suomeksi
+personal_responsibility_finnish_levels <- levels(round8_subset$personal_responsibility)
+personal_responsibility_finnish_levels[1] <- "En lainkaan"
+personal_responsibility_finnish_levels[11] <- "Hyvin paljon"
+levels(round8_subset$personal_responsibility) <- personal_responsibility_finnish_levels
 ```
 
-Suomen aineisto sisältää $n = 1925$ tilastoyksikköä, joilta kultakin on kerättyä tietoa $499$ muuttujasta. Tutkiessamme suomalaisten henkilökohtaista ilmastovastuuta päämielenkiintomme kohdistuu muuttujaan `D23. To what extent do you feel a personal responsibility to try to reduce climate change?`. 
+Suomen aineisto sisältää $n = 1925$ tilastoyksikköä, joilta kultakin on kerättyä tietoa $499$ muuttujasta. Tutkiessamme suomalaisten henkilökohtaista ilmastovastuuta päämielenkiintomme kohdistuu muuttujaan `D23. To what extent do you feel a personal responsibility to try to reduce climate change?` eli "kuinka paljon tunnet henkilökohtaista vastuuta ilmastonmuutokset vähentämiseksi?". Muuttuja on 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan" ja luokka 11 vastausta "hyvin paljon".
 
-D28. How likely do you think it is that governments in enough countries will take action that reduces climate change?
-Miten näiden kysymysten yhteys muuttuu kun vastaajan käsitys ilmastonmuutoksen syistä huomioidaan?
+Havainto kyseisestä muuttujasta puuttuu $34$ tilastoyksiköltä.
 
-D22. Do you think that climate change is caused by natural processes, human activity, or both?
+MissMech: An R Package for Testing
+Homoscedasticity, Multivariate Normality, and
+Missing Completely at Random (MCAR)
+Mortaza Jamshidian 2014
+Journal of Statistical Software
+January 2014, Volume 56, Issue 6.
 
-Lisäksi hyödynnämme analyysissa ... Tutkitaan lisäksi taustamuuttujien vaikutusta,  ikä, koulutus, sukupuoli, poliittinen suuntautuminen. Descriptive stuff goes here.
+VISUALISOITUNA
 
-Näiden perusteella valitaan ...
+```{r fig.width=6, fig.caption="\\label{fig:figs}Henkilökohtainen vastuu"}
+ggplot(data=round8_subset, aes(round8_subset$personal_responsibility))+ labs(title="", x="", y="f") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=10))
+```
 
-# Mallintaminen
+mukaan suomalaiset tuntevat keskimääräisesti (vastausten ka. $`r round(mean(round8_subset$personal_responsibility),2)`$) vastuuta ilmastonmuutoksen ehkäisemisestä. 
 
-Koska ... vähennetään luokkia. 
+Pyritään ensin tarkastelemaan miten muuttuja `D28. How likely do you think it is that governments in enough countries will take action that reduces climate change?` eli se "kuinka todennäköisenä pitää sitä, että riittävän monen maan hallitus toimii ilmastomuutoksen hillitsemiseksi" vaikuttaa vastaajan omaan vastuun kokemiseen ilmastonmuutoksen vähentämisestä. Kyseinen muuttuja on niin ikään 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan todennäköisenä" ja luokka 11 vastausta "hyvin todennäköisenä".
+
+Tämän jälkeen tarkastellaan, miten näiden kysymysten välinen yhteys muuttuu, kun vastaajan käsitys ilmastonmuutoksen syistä huomioidaan. Käsitystä mitataan muuttujalla `D22. Do you think that climate change is caused by natural processes, human activity, or both?` eli "uskotko ilmastonmuutoksen aiheutuvan luonnollisista prosesseista, ihmisen toiminnasta vai molemmista".
+
+Tämän mittaamiseen on käytetty viisiluokkaista ordinaalista muuttujaa, jossa luokka 1 vastaa vastausta "kokonaan luonnollisista prosesseista", luokka 3 vastausta "yhtä paljon luonnollisista prosesseista ja ihmisen toiminnasta" ja luokka 5 vastausta "kokonaan ihmisen toiminnasta". Lisäksi muuttujassa on kuudes luokka "en usko ilmastonmuutokseen", mutta tässä luokassa ei Suomen aineistossa ole yhtään vastausta (kun vastemuuttujan `D23` puuttuvat havainnot poistetaan).
+
+Lisäksi pyrimme tarkastelemaan analyysissa seuraavien taustamuuttujien vaikutusta henkilökohtaisen ilmastovastuun kokemiseen: 
+
+* **Ikä**. Jatkuva, numeerinen. Vaihteluväli ...
+* **Sukupuoli**. Kaksiluokkainen, kategorinen.
+* **Koulutus**. Tsiljoonaluokkainen
+* **Poliittinen suuntautuminen**.
+
+Muuttujien välistä korrelaatiota () tarkastelemalla
+
+```{r}
+# Tiputetaan havainnot joissa kysymysmuuttujissa puuttuvia havaintoja
+round8_subset <- round8_subset[complete.cases(round8_subset),]
+kable(cor(round8_subset))
+```
+
+
+
+# Tutkimuskysymyksen mallintaminen
+
+Koska ... vähennetään luokkia. Molemmat muuttujat ordinaalisia, 
+henkilökohtainen vastuu 0-10 (11 luokkaa),
+tarpeeksi monen maan hallituksen toimet 0-10 (11 luokkaa)
+=> logit malli, koska ordinaalinen, kumulatiivinen logit
+Kolmiluokkainen vaikuttaa järkevältä, (tähän varmaan perusteet miksi tehty),
+luokitellaan 4-3-4.
 
 *	käytettyjen menetelmien kuvauksen 
 *	menetelmien teoreettista taustaa
 *	mallien rakentamisen periaatteet
 *	mallien diagnostiikan
-
-```{r}
-# Tiputetaan havainnot joissa kysymysmuuttujissa puuttuvia havaintoja
- round8_subset <- round8_subset[complete.cases(round8_subset),]
-```
-
-*	tutkimuskysymyksen kuvauksen
-
-halutaan tutkia  (=> D23. To what extent do you feel a personal responsibility to try to reduce climate change?). Miten se, kuinka kokee tekevätkö tarpeeksi monen maan hallitukset töitä ilmastonmuutoksen hillitsemiseksi on yhteydessä ihmisen kokemaan henkilökohtaisen vaastuuseen ilmastonmuutoksesta (D28. How likely do you think it is that governments in enough countries will take action that reduces climate change?).
-
-Tarkastellaan Suomen aineistoa
-
-Molemmat muuttujat ordinaalisia, 
-henkilökohtainen vastuu 0-10 (11 luokkaa),
-tarpeeksi monen maan hallituksen toimet 0-10 (11 luokkaa)
-=> logit malli, koska ordinaalinen, kumulatiivinen logit
-
-Kolmiluokkainen vaikuttaa järkevältä, (tähän varmaan perusteet miksi tehty),
-luokitellaan 4-3-4.
-
-Miten näiden kysymysten yhteys muuttuu kun vastaajan käsitys ilmastonmuutoksen syistä huomioidaan?
-muutoksen syy 1-5 (5 luokkaa); 1: kokonaan luonnollinen - 5: kokonaan ihmisen aiheuttamaa (+en usko ilmastonmuutokseen)
-D22. Do you think that climate change is caused by natural processes, human activity, or both?
-
 
 ```{r eval=FALSE}
 round8_numeric <- cbind(as.data.frame(sapply(round8_subset[1:4], as.numeric)), round8_subset[5:8])
@@ -207,8 +233,5 @@ BIC(CumulativeCloglog)
 
 # Tulosten tulkinta ja johtopäätökset
 
-Kaikille: Tarkastele ensin kahden muuttujan assosiaatiota ja sen jälkeen kolmannen muuttujan vaikutusta tähän assosiaatioon.
-
-Kaikkien kysymysten taustamuuttujina voi käyttää tavanomaisia demografisia tekijöitä kuten vastaajan ikä, sukupuoli, koulutustaso jne.
 
 Tutustukaa myös tiedostoon ”Guide to weighting of ESS data”. 
