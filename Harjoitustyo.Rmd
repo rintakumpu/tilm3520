@@ -32,6 +32,9 @@ library(pander)
 # Reshape löytyy täältä
 library(MASS)
 
+# Datan splittaus
+library(caret)
+
 # Puuttuva datan käsittely
 library(MissMech)
 
@@ -66,6 +69,8 @@ round8_subset <- round8_subset[round8_variables]
 
 # Annetaan muuttujille inhimillisemmät nimet
 round8_new_variable_names <- c("caused_by","personal_responsibility","government_action","gender","age","education","income","politics")
+round8_finnish_variable_names <- c("syy","vastuu","hallitus","sukupuoli","ika","koulutus","tulot","politiikka")
+
 colnames(round8_subset) <- round8_new_variable_names
 
 # Ja käännetään levelit suomeksi
@@ -92,7 +97,9 @@ VISUALISOITUNA
 ggplot(data=round8_subset, aes(round8_subset$personal_responsibility))+ labs(title="", x="", y="f") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=10))
 ```
 
-mukaan suomalaiset tuntevat keskimääräisesti (vastausten ka. $`r round(mean(round8_subset$personal_responsibility),2)`$) vastuuta ilmastonmuutoksen ehkäisemisestä. 
+\vspace{1cm}
+
+mukaan suomalaiset tuntevat keskimääräisesti (vastausten ka. $`r round(mean(as.numeric(round8_subset[,2])),2)`$) vastuuta ilmastonmuutoksen ehkäisemisestä. 
 
 Pyritään ensin tarkastelemaan miten muuttuja `D28. How likely do you think it is that governments in enough countries will take action that reduces climate change?` eli se "kuinka todennäköisenä pitää sitä, että riittävän monen maan hallitus toimii ilmastomuutoksen hillitsemiseksi" vaikuttaa vastaajan omaan vastuun kokemiseen ilmastonmuutoksen vähentämisestä. Kyseinen muuttuja on niin ikään 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan todennäköisenä" ja luokka 11 vastausta "hyvin todennäköisenä".
 
@@ -102,20 +109,29 @@ Tämän mittaamiseen on käytetty viisiluokkaista ordinaalista muuttujaa, jossa 
 
 Lisäksi pyrimme tarkastelemaan analyysissa seuraavien taustamuuttujien vaikutusta henkilökohtaisen ilmastovastuun kokemiseen: 
 
-* **Ikä**. Jatkuva, numeerinen. Vaihteluväli ...
-* **Sukupuoli**. Kaksiluokkainen, kategorinen.
-* **Koulutus**. Tsiljoonaluokkainen
-* **Poliittinen suuntautuminen**.
+* **Ikä** (`ika`), jatkuva ja numeerinen, vaihteluväli $`r min(as.numeric(round8_subset$age))`$ &ndash; $`r max(as.numeric(round8_subset$age))`$,
+* **sukupuoli** (`sukupuoli`), kategorinen, kaksiluokkainen,
+* **ruokakunnan tulot** (`tulot`) desiileissä, kategorinen, $10$ luokkaa,
+* **koulutus** (`koulutus`), kategorinen, $28$ luokkaa,
+* **poliittinen suuntautuminen** (`politiikka`) vasen-oikea akselilla, ordinaalinen, $11$ luokkaa (0 = vasen, 10 = oikea).
 
 Muuttujien välistä korrelaatiota () tarkastelemalla
 
 ```{r}
 # Tiputetaan havainnot joissa kysymysmuuttujissa puuttuvia havaintoja
 round8_subset <- round8_subset[complete.cases(round8_subset),]
-kable(cor(round8_subset))
+
+# Muunnetaan faktoriaineisto numeeriseksi
+round8_numeric <- cbind(as.data.frame(sapply(round8_subset[1:4], as.numeric)), round8_subset[5:8])
+round8_numeric <- cbind(round8_numeric[1:5], as.data.frame(sapply(round8_numeric[6:8], as.numeric)))
+round8_numeric <- cbind(round8_numeric[1:4], as.numeric(as.character(round8_numeric$age)), round8_numeric[6:8])
+
+colnames(round8_numeric) <- round8_finnish_variable_names
+kable(round(cor(round8_numeric),3))
+colnames(round8_numeric) <- round8_new_variable_names
 ```
 
-
+koulutuksen ja tulotason välillä vallitsevan korrelaation vuoksi voidaan näistä ... mallintamisen ... yksinkertaisena.
 
 # Tutkimuskysymyksen mallintaminen
 
@@ -131,40 +147,34 @@ luokitellaan 4-3-4.
 *	mallien rakentamisen periaatteet
 *	mallien diagnostiikan
 
-```{r eval=FALSE}
-round8_numeric <- cbind(as.data.frame(sapply(round8_subset[1:4], as.numeric)), round8_subset[5:8])
-round8_numeric <- cbind(round8_numeric[1:5], as.data.frame(sapply(round8_numeric[6:8], as.numeric)))
-round8_numeric <- cbind(round8_numeric[1:4], as.numeric(as.character(round8_numeric$age)), round8_numeric[6:8])
-colnames(round8_numeric) <- round8_new_variable_names
 
-#mean(round8_numeric$caused_by)
-#mean(round8_numeric$personal_responsibility)
-#mean(round8_numeric$government_action)
-#var(round8_numeric$caused_by)
-#var(round8_numeric$personal_responsibility)
-#var(round8_numeric$government_action)
-#hist(round8_numeric[,2])
-
+```{r}
+# Pätkitään muuttujat
 round8_numeric$age <- cut(as.numeric(round8_numeric$age), breaks=c(0, 29, 44, 64, Inf), labels=FALSE)
 round8_numeric$government_action <- cut(round8_numeric$government_action, breaks=c(0,3,6,Inf), labels=FALSE)
 round8_numeric$personal_responsibility <- cut(round8_numeric$personal_responsibility, breaks=c(0,3,6,Inf), labels=FALSE)
 round8_numeric$caused_by <- cut(round8_numeric$caused_by, breaks=c(0,2,3,Inf), labels=FALSE)
 round8_numeric$politics <- cut(round8_numeric$politics, breaks=c(0,3,6,Inf), labels=FALSE)
 round8_numeric$income <- cut(round8_numeric$income, breaks=c(0,3,6,Inf), labels=FALSE)
+```
 
+```{r}
+# Lasketaan vastemuuttujan frekvenssit ja muutetaan data wide-muotoon
 round8_numeric_freq <- as.data.frame(xtabs( ~ government_action + personal_responsibility + gender + income + age, round8_numeric))
-
 round8 <- reshape(round8_numeric_freq, timevar = "personal_responsibility", idvar = c("government_action", "gender", "income","age"), direction = "wide")
-#round8 <- round8[-c(10),]
+```
+
+```{r}
+# Poistetaan nollafrekvenssit
+round8 <- round8[!(round8$Freq.1 == 0 & round8$Freq.2 == 0 & round8$Freq.3 == 0),]
 ```
 
 ```{r eval=FALSE}
 # Kaikki muuttujat
-Fullcumulativlog <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*income*gender*age, family=cumulative(parallel=TRUE), data=round8)
-summary(Fullcumulativlog)
-AIC(Fullcumulativlog)
-BIC(Fullcumulativlog)
-
+#Fullcumulativlog <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*income*gender*age, family=cumulative(parallel=TRUE), data=round8)
+#summary(Fullcumulativlog)
+#AIC(Fullcumulativlog)
+#BIC(Fullcumulativlog)
 
 #Kumulatiivinen logit-mallit
 Cumulativlog <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+income+gender+age, family=cumulative(parallel=TRUE), data=round8)
@@ -232,6 +242,5 @@ BIC(CumulativeCloglog)
 ```
 
 # Tulosten tulkinta ja johtopäätökset
-
 
 Tutustukaa myös tiedostoon ”Guide to weighting of ESS data”. 
