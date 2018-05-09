@@ -82,30 +82,32 @@ levels(round8_subset$personal_responsibility) <- personal_responsibility_finnish
 
 Suomen aineisto sisältää $n = 1925$ tilastoyksikköä, joilta kultakin on kerättyä tietoa $499$ muuttujasta. Tutkiessamme suomalaisten henkilökohtaista ilmastovastuuta päämielenkiintomme kohdistuu muuttujaan `D23. To what extent do you feel a personal responsibility to try to reduce climate change?` eli "kuinka paljon tunnet henkilökohtaista vastuuta ilmastonmuutokset vähentämiseksi?". Muuttuja on 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan" ja luokka 11 vastausta "hyvin paljon".
 
-Havainto kyseisestä muuttujasta puuttuu $34$ tilastoyksiköltä.
+Havainto kyseisestä muuttujasta puuttuu $34$ tilastoyksiköltä. Kun tarkastellaan ... tukee pudottamista. 
 
-MissMech: An R Package for Testing
-Homoscedasticity, Multivariate Normality, and
+MissMech: An R Package for Testing Homoscedasticity, Multivariate Normality, and
 Missing Completely at Random (MCAR)
 Mortaza Jamshidian 2014
-Journal of Statistical Software
+Journal of Statistical Softwares
 January 2014, Volume 56, Issue 6.
 
-VISUALISOITUNA
-
-```{r fig.width=6, fig.caption="\\label{fig:figs}Henkilökohtainen vastuu"}
-ggplot(data=round8_subset, aes(round8_subset$personal_responsibility))+ labs(title="", x="", y="f") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=10))
+```{r}
+# Tiputetaan havainnot joissa kysymysmuuttujissa puuttuvia havaintoja
+round8_subset <- round8_subset[complete.cases(round8_subset),]
 ```
 
-\vspace{1cm}
+Kun aineistosta on pudotettu puuttuvat havainnot, havaitaan, että aineiston mukaan suomalaiset tuntevat keskimääräisesti (vastausten ka. $`r round(mean(as.numeric(round8_subset[,2])),2)`$) paljon vastuuta ilmastonmuutoksen ehkäisemisestä (kts. Kaavio 1). 
 
-mukaan suomalaiset tuntevat keskimääräisesti (vastausten ka. $`r round(mean(as.numeric(round8_subset[,2])),2)`$) vastuuta ilmastonmuutoksen ehkäisemisestä. 
+```{r fig.width=6, fig.caption="\\label{fig:figs}Henkilökohtainen vastuu"}
+ggplot(data=round8_subset, aes(round8_subset$personal_responsibility))+ labs(title="", x="", y="f", caption="Kaavio 1: Henkilökohtainen vastuu ilmastonmuutoksesta.") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=10))
+```
+
+\vspace{0.75cm}
 
 Pyritään ensin tarkastelemaan miten muuttuja `D28. How likely do you think it is that governments in enough countries will take action that reduces climate change?` eli se "kuinka todennäköisenä pitää sitä, että riittävän monen maan hallitus toimii ilmastomuutoksen hillitsemiseksi" vaikuttaa vastaajan omaan vastuun kokemiseen ilmastonmuutoksen vähentämisestä. Kyseinen muuttuja on niin ikään 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan todennäköisenä" ja luokka 11 vastausta "hyvin todennäköisenä".
 
 Tämän jälkeen tarkastellaan, miten näiden kysymysten välinen yhteys muuttuu, kun vastaajan käsitys ilmastonmuutoksen syistä huomioidaan. Käsitystä mitataan muuttujalla `D22. Do you think that climate change is caused by natural processes, human activity, or both?` eli "uskotko ilmastonmuutoksen aiheutuvan luonnollisista prosesseista, ihmisen toiminnasta vai molemmista".
 
-Tämän mittaamiseen on käytetty viisiluokkaista ordinaalista muuttujaa, jossa luokka 1 vastaa vastausta "kokonaan luonnollisista prosesseista", luokka 3 vastausta "yhtä paljon luonnollisista prosesseista ja ihmisen toiminnasta" ja luokka 5 vastausta "kokonaan ihmisen toiminnasta". Lisäksi muuttujassa on kuudes luokka "en usko ilmastonmuutokseen", mutta tässä luokassa ei Suomen aineistossa ole yhtään vastausta (kun vastemuuttujan `D23` puuttuvat havainnot poistetaan).
+Ilmastonmuutoksen syiden mittaamiseen on käytetty viisiluokkaista ordinaalista muuttujaa, jossa luokka 1 vastaa vastausta "kokonaan luonnollisista prosesseista", luokka 3 vastausta "yhtä paljon luonnollisista prosesseista ja ihmisen toiminnasta" ja luokka 5 vastausta "kokonaan ihmisen toiminnasta". Lisäksi muuttujassa on kuudes luokka "en usko ilmastonmuutokseen", mutta tässä luokassa ei Suomen aineistossa ole yhtään vastausta (kun vastemuuttujan `D23` puuttuvat havainnot poistetaan).
 
 Lisäksi pyrimme tarkastelemaan analyysissa seuraavien taustamuuttujien vaikutusta henkilökohtaisen ilmastovastuun kokemiseen: 
 
@@ -115,19 +117,16 @@ Lisäksi pyrimme tarkastelemaan analyysissa seuraavien taustamuuttujien vaikutus
 * **koulutus** (`koulutus`), kategorinen, $28$ luokkaa,
 * **poliittinen suuntautuminen** (`politiikka`) vasen-oikea akselilla, ordinaalinen, $11$ luokkaa (0 = vasen, 10 = oikea).
 
-Muuttujien välistä korrelaatiota () tarkastelemalla
+Muuttujien välistä korrelaatiota (Taulukko 1) tarkastelemalla havaitaan TODO
 
 ```{r}
-# Tiputetaan havainnot joissa kysymysmuuttujissa puuttuvia havaintoja
-round8_subset <- round8_subset[complete.cases(round8_subset),]
-
 # Muunnetaan faktoriaineisto numeeriseksi
 round8_numeric <- cbind(as.data.frame(sapply(round8_subset[1:4], as.numeric)), round8_subset[5:8])
 round8_numeric <- cbind(round8_numeric[1:5], as.data.frame(sapply(round8_numeric[6:8], as.numeric)))
 round8_numeric <- cbind(round8_numeric[1:4], as.numeric(as.character(round8_numeric$age)), round8_numeric[6:8])
 
 colnames(round8_numeric) <- round8_finnish_variable_names
-kable(round(cor(round8_numeric),3))
+kable(round(cor(round8_numeric),3), caption="Taulukko 1: Muuttujien väliset korrelaatiot.")
 colnames(round8_numeric) <- round8_new_variable_names
 ```
 
