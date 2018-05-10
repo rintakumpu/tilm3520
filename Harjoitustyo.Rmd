@@ -40,6 +40,12 @@ library(MissMech)
 
 # Nätimmät plotit
 library(ggplot2)
+
+#Kuvailevaa tarkastelua vasteen suhteen
+library(gmodels)
+
+# GLM-mallit
+library(VGAM)
 ```
 
 # Johdanto
@@ -109,28 +115,60 @@ Tämän jälkeen tarkastellaan, miten näiden kysymysten välinen yhteys muuttuu
 
 Ilmastonmuutoksen syiden mittaamiseen on käytetty viisiluokkaista ordinaalista muuttujaa, jossa luokka 1 vastaa vastausta "kokonaan luonnollisista prosesseista", luokka 3 vastausta "yhtä paljon luonnollisista prosesseista ja ihmisen toiminnasta" ja luokka 5 vastausta "kokonaan ihmisen toiminnasta". Lisäksi muuttujassa on kuudes luokka "en usko ilmastonmuutokseen", mutta tässä luokassa ei Suomen aineistossa ole yhtään vastausta (kun vastemuuttujan `D23` puuttuvat havainnot poistetaan).
 
-Lisäksi pyrimme tarkastelemaan analyysissa seuraavien taustamuuttujien vaikutusta henkilökohtaisen ilmastovastuun kokemiseen: 
+Lisäksi pyrimme tarkastelemaan taustamuuttujien 
 
-* **Ikä** (`ika`), jatkuva ja numeerinen, vaihteluväli $`r min(as.numeric(round8_subset$age))`$ &ndash; $`r max(as.numeric(round8_subset$age))`$,
+* **ikä** (`ika`), jatkuva ja numeerinen, vaihteluväli $`r min(as.numeric(round8_subset$age))`$ &ndash; $`r max(as.numeric(round8_subset$age))`$,
 * **sukupuoli** (`sukupuoli`), kategorinen, kaksiluokkainen,
-* **ruokakunnan tulot** (`tulot`) desiileissä, kategorinen, $10$ luokkaa,
-* **koulutus** (`koulutus`), kategorinen, $28$ luokkaa,
-* **poliittinen suuntautuminen** (`politiikka`) vasen-oikea akselilla, ordinaalinen, $11$ luokkaa (0 = vasen, 10 = oikea).
 
-Muuttujien välistä korrelaatiota (Taulukko 1) tarkastelemalla havaitaan TODO
+vaikutusta henkilökohtaisen ilmastovastuun kokemiseen.  Muuttujien välistä korrelaatiota (Taulukko 1) tarkastelemalla havaitaan, TODO: JOTAIN ETTÄ PIDETÄÄN YKSINKERTAISENA. Korrelaatiotarkastelua ei nyt varmaan tällaisilla muuttujilla tarvita?
 
 ```{r}
 # Muunnetaan faktoriaineisto numeeriseksi
-round8_numeric <- cbind(as.data.frame(sapply(round8_subset[1:4], as.numeric)), round8_subset[5:8])
-round8_numeric <- cbind(round8_numeric[1:5], as.data.frame(sapply(round8_numeric[6:8], as.numeric)))
-round8_numeric <- cbind(round8_numeric[1:4], as.numeric(as.character(round8_numeric$age)), round8_numeric[6:8])
+round8_numeric <- as.data.frame(sapply(round8_subset[1:5], as.numeric))
 
-colnames(round8_numeric) <- round8_finnish_variable_names
+# Poistetaan "ylimääräiset" taustamuuttujat (poliittinen suuntautuminen, ruokakunnan tulot, koulutustaso)
+#round8_numeric <- cbind(round8_numeric[1:5], as.data.frame(sapply(round8_numeric[6:8], as.numeric)))
+#round8_numeric <- cbind(round8_numeric[1:4], as.numeric(as.character(round8_numeric$age)), round8_numeric[6:8])
+
+colnames(round8_numeric) <- round8_finnish_variable_names[1:5]
 kable(round(cor(round8_numeric),3), caption="Taulukko 1: Muuttujien väliset korrelaatiot.")
-colnames(round8_numeric) <- round8_new_variable_names
+colnames(round8_numeric) <- round8_new_variable_names[1:5]
 ```
 
-koulutuksen ja tulotason välillä vallitsevan korrelaation vuoksi voidaan näistä ... mallintamisen ... yksinkertaisena.
+```{r}
+# Pätkitään muuttujat
+round8_numeric$age <- cut(as.numeric(round8_numeric$age), breaks=c(0, 29, 44, 64, Inf), labels=FALSE)
+round8_numeric$government_action <- cut(round8_numeric$government_action, breaks=c(0,3,6,Inf), labels=FALSE)
+round8_numeric$personal_responsibility <- cut(round8_numeric$personal_responsibility, breaks=c(0,3,6,Inf), labels=FALSE)
+round8_numeric$caused_by <- cut(round8_numeric$caused_by, breaks=c(0,2,3,Inf), labels=FALSE)
+# Tiputetaan 
+round8_numeric <- round8_numeric[,1:5]
+```
+
+```{r}
+# Lasketaan vastemuuttujan frekvenssit ja muutetaan data wide-muotoon
+round8_numeric_freq <- as.data.frame(xtabs( ~ government_action + personal_responsibility + gender + age, round8_numeric))
+round8 <- reshape(round8_numeric_freq, timevar = "personal_responsibility", idvar = c("government_action", "gender", "age"), direction = "wide")
+
+round8_numeric_freq_2 <- as.data.frame(xtabs( ~ government_action + personal_responsibility + caused_by + gender + age, round8_numeric))
+round8_2 <- reshape(round8_numeric_freq_2, timevar = "personal_responsibility", idvar = c("government_action", "caused_by", "gender", "age"), direction = "wide")
+```
+
+```{r}
+#Kuvailevaa tarkastelua vasteen suhteen
+xtabs(~government_action+gender, data = round8)
+CrossTable(round8_numeric$personal_responsibility,round8_numeric$government_action,digits=2,prop.t = TRUE,prop.chisq =  FALSE, format = "SPSS")
+CrossTable(round8_numeric$personal_responsibility,round8_numeric$gender,digits=2,prop.t = TRUE,prop.chisq =  FALSE, format = "SPSS")
+CrossTable(round8_numeric$personal_responsibility,round8_numeric$age,digits=2,prop.t = TRUE,prop.chisq =  FALSE, format = "SPSS")
+CrossTable(round8_numeric$personal_responsibility,round8_numeric$caused_by,digits=2,prop.t = TRUE,prop.chisq =  FALSE, format = "SPSS")
+```
+
+
+```{r}
+# Poistetaan nollafrekvenssit
+round8 <- round8[!(round8$Freq.1 == 0 & round8$Freq.2 == 0 & round8$Freq.3 == 0),]
+round8_2 <- round8_2[!(round8_2$Freq.1 == 0 & round8_2$Freq.2 == 0 & round8_2$Freq.3 == 0),]
+```
 
 # Tutkimuskysymyksen mallintaminen
 
@@ -146,98 +184,315 @@ luokitellaan 4-3-4.
 *	mallien rakentamisen periaatteet
 *	mallien diagnostiikan
 
-
 ```{r}
-# Pätkitään muuttujat
-round8_numeric$age <- cut(as.numeric(round8_numeric$age), breaks=c(0, 29, 44, 64, Inf), labels=FALSE)
-round8_numeric$government_action <- cut(round8_numeric$government_action, breaks=c(0,3,6,Inf), labels=FALSE)
-round8_numeric$personal_responsibility <- cut(round8_numeric$personal_responsibility, breaks=c(0,3,6,Inf), labels=FALSE)
-round8_numeric$caused_by <- cut(round8_numeric$caused_by, breaks=c(0,2,3,Inf), labels=FALSE)
-round8_numeric$politics <- cut(round8_numeric$politics, breaks=c(0,3,6,Inf), labels=FALSE)
-round8_numeric$income <- cut(round8_numeric$income, breaks=c(0,3,6,Inf), labels=FALSE)
-```
-
-```{r}
-# Lasketaan vastemuuttujan frekvenssit ja muutetaan data wide-muotoon
-round8_numeric_freq <- as.data.frame(xtabs( ~ government_action + personal_responsibility + gender + income + age, round8_numeric))
-round8 <- reshape(round8_numeric_freq, timevar = "personal_responsibility", idvar = c("government_action", "gender", "income","age"), direction = "wide")
+#Erilinkkien vertailu
+#Kumulative logit
+Fullcumulativlog <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*gender*age, family=cumulative(parallel=TRUE), data=round8)
+summary(Fullcumulativlog)
+AIC(Fullcumulativlog)
+BIC(Fullcumulativlog)
+deviance(Fullcumulativlog)
+logLik(Fullcumulativlog)
 ```
 
 ```{r}
-# Poistetaan nollafrekvenssit
-round8 <- round8[!(round8$Freq.1 == 0 & round8$Freq.2 == 0 & round8$Freq.3 == 0),]
-```
-
-```{r eval=FALSE}
-# Kaikki muuttujat
-#Fullcumulativlog <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*income*gender*age, family=cumulative(parallel=TRUE), data=round8)
-#summary(Fullcumulativlog)
-#AIC(Fullcumulativlog)
-#BIC(Fullcumulativlog)
-
-#Kumulatiivinen logit-mallit
-Cumulativlog <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+income+gender+age, family=cumulative(parallel=TRUE), data=round8)
-summary(Cumulativlog)
-AIC(Cumulativlog)
-BIC(Cumulativlog)
-```
-
-```{r eval=FALSE}
-round8_numeric_freq2 <- as.data.frame(xtabs( ~ government_action + caused_by + personal_responsibility + gender + age, round8_numeric))
-round8_2 <- reshape(round8_numeric_freq2, timevar = "personal_responsibility", idvar = c("government_action", "caused_by", "gender", "age"), direction = "wide")
-rownames(round8_2) <- 1:dim(round8_2)[1]
-round8_2 <- round8_2[-c(10,64),]
-
-#Kumulatiivinen logit-mallit
-Cumulativlog2 <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+caused_by+government_action:caused_by+gender+age, family=cumulative(parallel=TRUE, reverse = TRUE), data=round8_2)
-summary(Cumulativlog2)
-AIC(Cumulativlog2)
-BIC(Cumulativlog2)
-```
-
-```{r eval=FALSE}
-round8_numeric_freq3 <- as.data.frame(xtabs( ~ government_action + personal_responsibility + gender, round8_numeric))
-round8_3 <- reshape(round8_numeric_freq3, timevar = "personal_responsibility", idvar = c("government_action","gender"), direction = "wide")
-#rownames(round8_2) <- 1:dim(round8_2)[1]
-#round8_2 <- round8_2[-c(10,64),]
-
-#Kumulatiivinen logit-mallit
-Cumulativlog3 <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*gender, family=cumulative(parallel=TRUE, reverse = FALSE), data=round8_3)
-summary(Cumulativlog3)
-AIC(Cumulativlog3)
-BIC(Cumulativlog3)
-
-```
-
-```{r eval=FALSE}
-
-
 #Adjacent-categories logit-malli
-AdjCatLogit <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+gender*age, family=acat(parallel=TRUE), data=round8)
+AdjCatLogit <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*gender*age, family=acat(parallel=TRUE), data=round8)
 summary(AdjCatLogit)
 AIC(AdjCatLogit)
 BIC(AdjCatLogit)
+deviance(AdjCatLogit)
+logLik(AdjCatLogit)
+```
 
+```{r}
 #Continuation-Ratio logit-malli
-ConRatLogit <- vglm(cbind(Freq.1,Freq.2,Freq.3,Freq.4,Freq.5) ~ government_action+gender*age, family=cratio(parallel=TRUE), data=round8)
+ConRatLogit <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*gender*age, family=cratio(parallel=TRUE), data=round8)
 summary(ConRatLogit)
 AIC(ConRatLogit)
 BIC(ConRatLogit)
+deviance(ConRatLogit)
+logLik(ConRatLogit)
+```
 
-
+```{r}
 #Kumulatiivinen probit-malli
-CumulativeProbit <- vglm(cbind(Freq.1,Freq.2,Freq.3,Freq.4,Freq.5) ~ government_action+gender*age, family=cumulative(link=probit, parallel=TRUE), data=round8)
+CumulativeProbit <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*gender*age, family=cumulative(link=probit, parallel=TRUE), data=round8)
 summary(CumulativeProbit)
 AIC(CumulativeProbit)
 BIC(CumulativeProbit)
+deviance(CumulativeProbit)
+logLik(CumulativeProbit)
+```
 
-
+```{r}
 #Kumulatiivinen clog-log-malli
-CumulativeCloglog <- vglm(cbind(Freq.1,Freq.2,Freq.3,Freq.4,Freq.5) ~ government_action+gender*age, family=cumulative(link=cloglog, parallel=TRUE), data=round8)
+CumulativeCloglog <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*gender*age, family=cumulative(link=cloglog, parallel=TRUE), data=round8)
 summary(CumulativeCloglog)
 AIC(CumulativeCloglog)
 BIC(CumulativeCloglog)
+deviance(CumulativeCloglog)
+logLik(CumulativeCloglog)
+```
 
+```{r}
+#tehd??n  vertailu taulukko
+aic<- rbind(AIC(Fullcumulativlog),AIC(AdjCatLogit),AIC(ConRatLogit), AIC(CumulativeProbit), AIC(CumulativeCloglog))
+bic<-rbind(BIC(Fullcumulativlog),BIC(AdjCatLogit),BIC(ConRatLogit), BIC(CumulativeProbit), BIC(CumulativeCloglog))
+devi<-rbind(deviance(Fullcumulativlog),deviance(AdjCatLogit),deviance(ConRatLogit), deviance(CumulativeProbit), deviance(CumulativeCloglog))
+logl<-rbind(logLik(Fullcumulativlog),logLik(AdjCatLogit),logLik(ConRatLogit), logLik(CumulativeProbit), logLik(CumulativeCloglog))
+```
+
+```{r}
+taulu<-cbind(aic,bic,devi,logl)
+muuttujat <- c("AIC","BIC","Deviance","LogLikelihood")
+mallit <- c("Cumulative logit","Adjacent-categories logit","Continuation-Ratio logit","Cumulative probit","Cumulative clog-log")
+
+colnames(taulu) <- muuttujat
+rownames(taulu)<-mallit
+kable(taulu)
+```
+
+
+```{r}
+##Adjacent-categories logit-malli selke?sti paras
+#mallinnuksen tekeminen
+##adjmallit Ylh??lt? alas perjaatteella
+#saturoitumalli
+ad <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*gender*age, family=acat(parallel=TRUE), data=round8)
+summary(ad)
+AIC(ad)
+BIC(ad)
+deviance(ad)
+logLik(ad)
+```
+
+```{r}
+#poistetaan kolmannen asteen yhteisvaikutus
+ad1 <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*gender*age-government_action:gender:age, family=acat(parallel=TRUE), data=round8)
+summary(ad1)
+AIC(ad1)
+BIC(ad1)
+deviance(ad1)
+logLik(ad1)
+```
+
+```{r}
+#Sis?kk?isten mallien vertailu
+1-pchisq((deviance(ad1) - deviance(ad)), (df.residual(ad1)-df.residual(ad)))
+# p-arvo ei merkitsev? joten malli ei selke?sti huonone verrattuna saturoituun
+#ad1 on nyt verrokki malli
+```
+
+```{r}
+#poistetaangovernment_action:gender yhteisvaikutus
+ad2 <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*gender*age-government_action:gender:age-government_action:gender, family=acat(parallel=TRUE), data=round8)
+summary(ad2)
+AIC(ad2)
+BIC(ad2)
+deviance(ad2)
+logLik(ad2)
+```
+
+```{r}
+#Sis?kk?isten mallien vertailu
+1-pchisq((deviance(ad2) - deviance(ad1)), (df.residual(ad2)-df.residual(ad1)))
+# p-arvo ei merkitsev? joten malli ei selke?sti huonone verrattuna saturoituun
+#ad2 on nyt verrokki malli
+```
+
+```{r}
+#poistetaan gender:age yhteisvaikutus
+ad3 <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action*gender*age-government_action:gender:age-government_action:gender-gender:age, family=acat(parallel=TRUE), data=round8)
+summary(ad3)
+AIC(ad3)
+BIC(ad3)
+deviance(ad3)
+logLik(ad3)
+```
+
+```{r}
+#Sis?kk?isten mallien vertailu
+1-pchisq((deviance(ad3) - deviance(ad2)), (df.residual(ad3)-df.residual(ad2)))
+# p-arvo ei merkitsev? joten malli ei selke?sti huonone verrattuna saturoituun
+#ad3 on nyt verrokki malli
+```
+
+```{r}
+#ad3 ois hyv? malli!
+#vain p??vaikutusten malli
+ad4 <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+gender+age, family=acat(parallel=TRUE), data=round8)
+summary(ad4)
+AIC(ad4)
+BIC(ad4)
+deviance(ad4)
+logLik(ad4)
+```
+
+```{r}
+#Sis?kk?isten mallien vertailu
+1-pchisq((deviance(ad4) - deviance(ad3)), (df.residual(ad4)-df.residual(ad3)))
+#malli menee merkitsev?sti huonommaks eli ad3 on paras
+```
+
+```{r}
+#Tyydyt??n ad3 malliin ja tarkastellaan sen residuaaleja
+
+plot(residuals(ad3))
+resid(ad3)
+xx<-round(fitted(ad3), 3)
+yy<-round(prop.table(as.matrix((round8[,4:6])), 1),3)
+cbind(yy,xx)
+eroo<-yy-xx
+hist(eroo)
+plot(eroo)
+
+data.frame(round8[1:3],round(prop.table(as.matrix((round8[,4:6])),1),3), round(fitted(ad3),2), round(residuals(ad3),2))
+```
+
+```{r}
+#toisen kysymyksen lis??minen malliin ja mallien vertailu
+#Kumulative logit
+Fullcumulativlog2 <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+caused_by+gender+age, family=cumulative(parallel=TRUE), data=round8_2)
+summary(Fullcumulativlog2)
+```
+
+```{r}
+#Adjacent-categories logit-malli
+AdjCatLogit2 <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+caused_by+gender+age, family=acat(parallel=TRUE), data=round8_2)
+summary(AdjCatLogit2)
+```
+
+```{r}
+#Continuation-Ratio logit-malli
+ConRatLogit2 <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+caused_by+gender+age, family=cratio(parallel=TRUE), data=round8_2)
+summary(ConRatLogit2)
+```
+
+```{r}
+#Kumulatiivinen probit-malli
+CumulativeProbit2 <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+caused_by+gender+age, family=cumulative(link=probit, parallel=TRUE), data=round8_2)
+summary(CumulativeProbit2)
+```
+
+```{r}
+#Kumulatiivinen clog-log-malli
+CumulativeCloglog2 <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+caused_by+gender+age, family=cumulative(link=cloglog, parallel=TRUE), data=round8_2)
+summary(CumulativeCloglog2)
+```
+
+```{r}
+#tehd??n  vertailu taulukko
+aic2<- rbind(AIC(Fullcumulativlog2),AIC(AdjCatLogit2),AIC(ConRatLogit2), AIC(CumulativeProbit2), AIC(CumulativeCloglog2))
+bic2<-rbind(BIC(Fullcumulativlog2),BIC(AdjCatLogit2),BIC(ConRatLogit2), BIC(CumulativeProbit2), BIC(CumulativeCloglog2))
+devi2<-rbind(deviance(Fullcumulativlog2),deviance(AdjCatLogit2),deviance(ConRatLogit2), deviance(CumulativeProbit2), deviance(CumulativeCloglog2))
+logl2<-rbind(logLik(Fullcumulativlog2),logLik(AdjCatLogit2),logLik(ConRatLogit2), logLik(CumulativeProbit2), logLik(CumulativeCloglog2))
+taulu2<-cbind(aic2,bic2,devi2,logl2)
+muuttujat <- c("AIC","BIC","Deviance","LogLikelihood")
+mallit <- c("Cumulative logit","Adjacent-categories logit","Continuation-Ratio logit","Cumulative probit","Cumulative clog-log")
+colnames(taulu2) <- muuttujat
+rownames(taulu2)<-mallit
+taulu2
+#taas adjacent paras.
+```
+
+```{r}
+##Mallintaminen
+#Adjacent-categories logit-malli l?ht?kohta
+AdjCatLogit <- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+caused_by+gender+age, family=acat(parallel=TRUE), data=round8_2)
+summary(AdjCatLogit)
+AIC(AdjCatLogit)
+BIC(AdjCatLogit)
+deviance(AdjCatLogit)
+logLik(AdjCatLogit)
+```
+
+```{r}
+##lis?t??n caused_by*age
+adcat1<- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+caused_by+gender+age+caused_by*age, family=acat(parallel=TRUE), data=round8_2)
+summary(adcat1)
+AIC(adcat1)
+BIC(adcat1)
+deviance(adcat1)
+logLik(adcat1)
+
+1-pchisq((deviance(AdjCatLogit) - deviance(adcat1)), (df.residual(AdjCatLogit)-df.residual(adcat1)))# parempi kuin l?ht?kohtamalli
+#k?ytet??n nyt adcat1 verrokkina
+```
+
+
+```{r}
+##lis?t??n government_action:caused_by
+adcat2<- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+caused_by+gender+age+caused_by*age+government_action:caused_by, family=acat(parallel=TRUE), data=round8_2)
+summary(adcat2)
+1-pchisq((deviance(adcat1) - deviance(adcat2)), (df.residual(adcat1)-df.residual(adcat2)))# ei paranna mallia
+AIC(adcat2)
+BIC(adcat2)
+deviance(adcat2)
+logLik(adcat2)
+#jatketaan adcat1
+```
+
+```{r}
+#lis?t??n government_action:age
+adcat3<- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+caused_by+gender+age+caused_by*age+government_action:age, family=acat(parallel=TRUE), data=round8_2)
+summary(adcat3)
+1-pchisq((deviance(adcat1) - deviance(adcat3)), (df.residual(adcat1)-df.residual(adcat3)))# ei paranna mallia
+AIC(adcat3)
+BIC(adcat3)
+deviance(adcat3)
+logLik(adcat3)
+#jatketaan adcat1
+```
+
+```{r}
+#lis?t??n gender:age
+adcat4<- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+caused_by+gender+age+caused_by*age+gender:age, family=acat(parallel=TRUE), data=round8_2)
+summary(adcat4)
+1-pchisq((deviance(adcat1) - deviance(adcat4)), (df.residual(adcat1)-df.residual(adcat4)))# ei paranna mallia
+AIC(adcat4)
+BIC(adcat4)
+deviance(adcat4)
+logLik(adcat4)
+#jatketaan adcat1
+```
+
+```{r}
+#lis?t??n caused_by:gender
+adcat5<- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+caused_by+gender+age+caused_by*age+caused_by:gender, family=acat(parallel=TRUE), data=round8_2)
+summary(adcat5)
+1-pchisq((deviance(adcat1) - deviance(adcat5)), (df.residual(adcat1)-df.residual(adcat5)))# ei paranna mallia
+AIC(adcat5)
+BIC(adcat5)
+deviance(adcat5)
+logLik(adcat5)
+#jatketaan adcat1
+```
+
+```{r}
+#lis?t??n government_action:gender
+adcat6<- vglm(cbind(Freq.1,Freq.2,Freq.3) ~ government_action+caused_by+gender+age+caused_by*age+government_action:gender, family=acat(parallel=TRUE), data=round8_2)
+summary(adcat6)
+1-pchisq((deviance(adcat1) - deviance(adcat6)), (df.residual(adcat1)-df.residual(adcat6)))# ei paranna mallia
+AIC(adcat6)
+BIC(adcat6)
+deviance(adcat6)
+logLik(adcat6)
+#jatketaan adcat1
+```
+
+```{r}
+#Tyydyt??n adcat1 malliin ja tarkastellaan sen residuaaleja
+
+plot(residuals(adcat1))
+resid(adcat1)
+x<-round(fitted(adcat1), 3)
+y<-round(prop.table(as.matrix((round8_2[,5:7])), 1),3)
+cbind(y,x)
+ero<-y-x
+hist(ero)
+
+data.frame(round8_2[1:3],round(prop.table(as.matrix((round8_2[,5:7])),1),3), round(fitted(adcat1),2), round(residuals(adcat1),2))
 ```
 
 # Tulosten tulkinta ja johtopäätökset
