@@ -95,10 +95,14 @@ missing_data_test <- LittleMCAR(round8_subset_full)
 round8_subset <- round8_subset_full[complete.cases(round8_subset_full),]
 ```
 
-Havainto kyseisestä muuttujasta puuttuu $34$ tilastoyksiköltä. Kun aineistosta on pudotettu puuttuvat havainnot (havaintojen pudottamista tarkastellaan tarkemmin myöhemmin), havaitaan, että aineiston mukaan suomalaiset tuntevat keskimääräisesti (vastausten ka. $`r round(mean(as.numeric(round8_subset[,1])),2)`$) paljon vastuuta ilmastonmuutoksen ehkäisemisestä (kts. Kaavio 1). 
+Havainto kyseisestä muuttujasta puuttuu $34$ tilastoyksiköltä. Kun aineistosta on pudotettu puuttuvat havainnot (havaintojen pudottamista tarkastellaan tarkemmin myöhemmin), havaitaan, että aineiston mukaan suomalaiset tuntevat keskimääräisesti (vastausten ka. $`r round(mean(as.numeric(round8_subset[,1])),2)`$) paljon vastuuta ilmastonmuutoksen ehkäisemisestä (kts. Kuva 1). 
+
+\begin{figure}
+  \caption{Henkilökohtainen vastuu ilmastonmuutoksesta.}
+\end{figure}
 
 ```{r fig.width=6, fig.caption="\\label{fig:figs}Henkilökohtainen vastuu"}
-ggplot(data=round8_subset, aes(round8_subset$personal_responsibility))+ labs(title="", x="", y="f", caption="Kaavio 1: Henkilökohtainen vastuu ilmastonmuutoksesta.") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=10))
+ggplot(data=round8_subset, aes(round8_subset$personal_responsibility))+ labs(title="", x="", y="f") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=10))
 ```
 
 \vspace{0.75cm}
@@ -121,6 +125,30 @@ Vol. 83, No. 404 (Dec., 1988), pp. 1198-1202.}
 
 Pitääksemme analyysin yksinkertaisena, rajoitamme tarkastelun näihin kahteen taustamuuttujaa. Lisäksi muuttujien välistä korrelaatiota (Taulukko 1) tarkastelemalla havaitsemme, ettei selittävien muuttujien välillä ole niin suurta korrelaatiota, että jokin muuttujista olisi perustettua jättää tarkastelun ulkopuolelle multikollineaarisuuden välttämiseksi. Samalla huomaamme, että suurin korrelaatio löytyy vastemuuttujan `D23` ja iän sekä ilmastonmuutoksen syyn välille. Muuttujien valinta vaikuttaa siis tässä suhteessa järkevältä. 
 
+```{r}
+# Muunnetaan faktoriaineisto numeeriseksi, paitsi
+# vastemuuttuja, joka pidetään graafeja varten toistaiseksi luokallisena
+round8_numeric <- cbind(round8_subset$personal_responsibility, as.data.frame(sapply(round8_subset[2:5], as.numeric)))
+
+# Poistetaan "ylimääräiset" taustamuuttujat (poliittinen suuntautuminen, ruokakunnan tulot, koulutustaso)
+#round8_numeric <- cbind(round8_numeric[1:5], as.data.frame(sapply(round8_numeric[6:8], as.numeric)))
+#round8_numeric <- cbind(round8_numeric[1:4], as.numeric(as.character(round8_numeric$age)), round8_numeric[6:8])
+
+round8_correlation <- cbind(as.data.frame(as.matrix(as.numeric(round8_numeric[,1]),nrow=1,ncol=1)), round8_numeric[2:5])
+colnames(round8_numeric) <- round8_finnish_variable_names[1:5]
+colnames(round8_correlation) <- round8_finnish_variable_names[1:5]
+
+kable(round(cor(round8_correlation),3), caption="Muuttujien väliset korrelaatiot.")
+colnames(round8_numeric) <- round8_new_variable_names[1:5]
+```
+
+```{r}
+# Pätkitään muuttujat (paitsi personal responsibility myöhemmin)
+round8_numeric$age <- cut(as.numeric(round8_numeric$age), breaks=c(0, 29, 44, 64, Inf), labels=FALSE)
+round8_numeric$government_action <- cut(round8_numeric$government_action, breaks=c(0,3,6,Inf), labels=FALSE)
+round8_numeric$caused_by <- cut(round8_numeric$caused_by, breaks=c(0,2,3,Inf), labels=FALSE)
+```
+
 Koska pyrimme mallintamaan ordinaalisten muuttujien välistä yhteyttä erilaisilla yleistetyillä lineaarisilla logit- ja probit-malleilla, vähennämme alkuperäisten muuttujien luokkia, jotta mallien sovittaminen pysyy sekä laskennallisesti että tulkinnallisesti riittävän yksinkertaisena.
 
 Ordinaalisten muuttujien `D23` (vastuuta mittaava vastemuuttuja) ja `D28` ("tarpeeksi moni hallitus") kohdalla päädymme mahdollisimman tasaiseen luokkajakoon, jossa luokat $0-3$ yhdistetään alimmaksi luokaksi, luokat $4-6$ keskimmäiseksi luokaksi ja luokat $7-10$ ylimmäksi luokaksi. 
@@ -129,28 +157,87 @@ Viisiluokkaisen (koska luokkaan "en usko ilmastonmuutokseen" ei kuulu yhtään t
 
 Lisäksi jaamme jatkuvan ikämuuttujan neljään luokkaan niin, että ensimmäiseen luokkaan sijoittuvat alle 31-vuotiaat, toiseen luokkaan 31-44-vuotiaat, kolmanteen luokkaan 45-64-vuotiaat ja neljänteen luokkaan yli 64-vuotiaat.
 
-```{r}
-# Muunnetaan faktoriaineisto numeeriseksi
-round8_numeric <- as.data.frame(sapply(round8_subset[1:5], as.numeric))
+Kun tarkastellaan henkilökohtaista ilmastovastuuta muiden muuttujien suhteen eri luokkien suhteen ennen kuin myös vastemuuttujan luokkia vähennetään (Taulukot) huomataan että HALLITUS ja 
 
-# Poistetaan "ylimääräiset" taustamuuttujat (poliittinen suuntautuminen, ruokakunnan tulot, koulutustaso)
-#round8_numeric <- cbind(round8_numeric[1:5], as.data.frame(sapply(round8_numeric[6:8], as.numeric)))
-#round8_numeric <- cbind(round8_numeric[1:4], as.numeric(as.character(round8_numeric$age)), round8_numeric[6:8])
+\vspace{1cm}
 
-colnames(round8_numeric) <- round8_finnish_variable_names[1:5]
-kable(round(cor(round8_numeric),3), caption="Muuttujien väliset korrelaatiot.")
-colnames(round8_numeric) <- round8_new_variable_names[1:5]
+\begin{center}
+  Kuva 2: D23 vastuu vs. D28 hallitus.
+  \vspace{0.3cm}
+\end{center}
+
+```{r fig.width=2, fig.height=2}
+personal_responsibility_finnish_levels[1] <- 0
+personal_responsibility_finnish_levels[11] <- 10
+levels(round8_numeric$personal_responsibility) <- personal_responsibility_finnish_levels
+
+ggplot(data=round8_numeric[round8_numeric$government_action==1,], aes(round8_numeric[round8_numeric$government_action==1,]$personal_responsibility))+ labs(title="", x="", y="f", caption="Luokka 1") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=12), plot.caption = element_text(size=8))
+
+ggplot(data=round8_numeric[round8_numeric$government_action==2,], aes(round8_numeric[round8_numeric$government_action==2,]$personal_responsibility))+ labs(title="", x="", y="f", caption="Luokka 2") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=6), plot.caption = element_text(size=8))
+
+ggplot(data=round8_numeric[round8_numeric$government_action==3,], aes(round8_numeric[round8_numeric$government_action==3,]$personal_responsibility))+ labs(title="", x="", y="f", caption="Luokka 3") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=6), plot.caption = element_text(size=8))
 ```
 
+\vspace{1cm}
+
+\begin{center}
+  Kuva 3: D23 vastuu vs. D22 syy.
+  \vspace{0.3cm}
+\end{center}
+
+```{r fig.width=2, fig.height=2}
+ggplot(data=round8_numeric[round8_numeric$caused_by==1,], aes(round8_numeric[round8_numeric$caused_by==1,]$personal_responsibility))+ labs(title="", x="", y="f", caption="Luokka 1") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=6), plot.caption = element_text(size=8))
+
+ggplot(data=round8_numeric[round8_numeric$caused_by==2,], aes(round8_numeric[round8_numeric$caused_by==2,]$personal_responsibility))+ labs(title="", x="", y="f", caption="Luokka 2") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=6), plot.caption = element_text(size=8))
+
+ggplot(data=round8_numeric[round8_numeric$caused_by==3,], aes(round8_numeric[round8_numeric$caused_by==3,]$personal_responsibility))+ labs(title="", x="", y="f", caption="Luokka 3") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=6), plot.caption = element_text(size=8))
+```
+
+\vspace{1cm}
+
+\begin{center}
+  Kuva 4: D23 vastuu vs. Ikä.
+  \vspace{0.3cm}
+\end{center}
+
+```{r fig.width=2, fig.height=2}
+ggplot(data=round8_numeric[round8_numeric$age==1,], aes(round8_numeric[round8_numeric$age==1,]$personal_responsibility))+ labs(title="", x="", y="f", caption="Luokka 1") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=6), plot.caption = element_text(size=8))
+
+ggplot(data=round8_numeric[round8_numeric$age==2,], aes(round8_numeric[round8_numeric$age==2,]$personal_responsibility))+ labs(title="", x="", y="f", caption="Luokka 2") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=6), plot.caption = element_text(size=8))
+
+ggplot(data=round8_numeric[round8_numeric$age==3,], aes(round8_numeric[round8_numeric$age==3,]$personal_responsibility))+ labs(title="", x="", y="f", caption="Luokka 3") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=6), plot.caption = element_text(size=8))
+
+ggplot(data=round8_numeric[round8_numeric$age==4,], aes(round8_numeric[round8_numeric$age==4,]$personal_responsibility))+ labs(title="", x="", y="f", caption="Luokka 4") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=6), plot.caption = element_text(size=8))
+```
+
+\vspace{1cm}
+
+\begin{center}
+  Kuva 5: D23 vastuu vs. Sukupuoli.
+  \vspace{0.3cm}
+\end{center}
+
+```{r fig.width=2, fig.height=2}
+ggplot(data=round8_numeric[round8_numeric$gender==1,], aes(round8_numeric[round8_numeric$gender==1,]$personal_responsibility))+ labs(title="", x="", y="f", caption="Mies") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=6), plot.caption = element_text(size=8))
+
+ggplot(data=round8_numeric[round8_numeric$gender==2,], aes(round8_numeric[round8_numeric$gender==2,]$personal_responsibility))+ labs(title="", x="", y="f", caption="Nainen") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=6), plot.caption = element_text(size=8))
+
+personal_responsibility_finnish_levels[1] <- "En lainkaan"
+personal_responsibility_finnish_levels[11] <- "Hyvin paljon"
+levels(round8_numeric$personal_responsibility) <- personal_responsibility_finnish_levels
+
+```
+
+\vspace{1cm}
+
+Seuraavaksi siirrymme mallintamaan ja tarkastelemaan havaittujen erojen tilastollista merkitsevyyttä (sekä mahdollisia eroja muuttujien yhdysvaikutuksissa).
+
 ```{r}
-# Pätkitään muuttujat
-round8_numeric$age <- cut(as.numeric(round8_numeric$age), breaks=c(0, 29, 44, 64, Inf), labels=FALSE)
-round8_numeric$government_action <- cut(round8_numeric$government_action, breaks=c(0,3,6,Inf), labels=FALSE)
+# Numeeristetaan ja pätkitään myös vastemuuttuja
+round8_numeric$personal_responsibility <- as.numeric(round8_numeric$personal_responsibility)
 round8_numeric$personal_responsibility <- cut(round8_numeric$personal_responsibility, breaks=c(0,3,6,Inf), labels=FALSE)
-round8_numeric$caused_by <- cut(round8_numeric$caused_by, breaks=c(0,2,3,Inf), labels=FALSE)
-# Tiputetaan 
-round8_numeric <- round8_numeric[,1:5]
 ```
+
 
 ```{r}
 # Lasketaan vastemuuttujan frekvenssit ja muutetaan data wide-muotoon
@@ -175,8 +262,6 @@ kable(CrossTable(round8_numeric$personal_responsibility,round8_numeric$caused_by
 round8 <- round8[!(round8$Freq.1 == 0 & round8$Freq.2 == 0 & round8$Freq.3 == 0),]
 round8_2 <- round8_2[!(round8_2$Freq.1 == 0 & round8_2$Freq.2 == 0 & round8_2$Freq.3 == 0),]
 ```
-
-Ristiintaulukoimalla ... muuttujan  ... kun TARKASTELEMME LUOKKIA KOLMANNEN MUUTTUJAN SUHTEEN. => ANALYYSI ON JÄRKEVÄ.
 
 # Tutkimuskysymyksen mallintaminen
 
