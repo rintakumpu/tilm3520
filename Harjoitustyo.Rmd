@@ -53,7 +53,7 @@ library(VGAM)
 
 Analyysityössämme tarkastelemme *[European Social Surveyn](http://ess.nsd.uib.no/)* 8. kierroksen aineiston (ESS 2016) pohjalta millaisena suomalaiset kokevat henkilökohtaisen vastuunsa ilmastonmuutoksen hillitsemisestä. 
 
-*European Social Survey* on tieteellisistä lähtökohdista toteutettava vertaileva kyselytutkimus, joka kattaa yli 30 Euroopan ja lähialueiden maata. ESS kartoittaa Euroopan maiden yhteiskunnallisen muutoksen ja väestön asenteiden, uskomusten ja käyttäytymisen välisiä suhteita. Suomessa tutkimus tunnetaan myös nimellä *Arvot ja mielipiteet Suomessa*. 
+*European Social Survey* on tieteellisistä lähtökohdista toteutettu vertaileva kyselytutkimus, joka kattaa yli 30 Euroopan ja lähialueiden maata. ESS kartoittaa Euroopan maiden yhteiskunnallisen muutoksen sekä väestön asenteiden, uskomusten ja käyttäytymisen välisiä suhteita. Suomessa tutkimus tunnetaan myös nimellä *Arvot ja mielipiteet Suomessa*. 
 
 Tutkimus on toteutettu Tilastokeskuksen ja Turun yliopiston yhteistyönä. Tutkimukseen on poimittu satunnaisesti 3 400 yli 15-vuotiasta suomalaista. Jokainen haastateltava edustaa vastauksillaan noin 1 300 suomalaista. \footnotemark  
 
@@ -87,7 +87,7 @@ personal_responsibility_finnish_levels[11] <- "Hyvin paljon"
 levels(round8_subset_full$personal_responsibility) <- personal_responsibility_finnish_levels
 ```
 
-Suomen aineisto sisältää $n = 1925$ tilastoyksikköä, joilta kultakin on kerättyä tietoa $499$ muuttujasta. Tutkiessamme suomalaisten henkilökohtaista ilmastovastuuta päämielenkiintomme kohdistuu muuttujaan `D23. To what extent do you feel a personal responsibility to try to reduce climate change?` eli "kuinka paljon tunnet henkilökohtaista vastuuta ilmastonmuutokset vähentämiseksi?". Muuttuja on 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan" ja luokka 11 vastausta "hyvin paljon".
+Suomen aineisto sisältää $n = 1925$ tilastoyksikköä, joista on kerättyä tietoa $499$ muuttujasta. Tutkiessamme suomalaisten henkilökohtaista ilmastovastuuta päämielenkiintomme kohdistuu muuttujaan `D23. To what extent do you feel a personal responsibility to try to reduce climate change?` eli "kuinka paljon tunnet henkilökohtaista vastuuta ilmastonmuutokset vähentämisestä?". Muuttuja on 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan" ja luokka 11 vastausta "hyvin paljon".
 
 ```{r include=FALSE}
 # Tiputetaan havainnot joissa kysymysmuuttujissa puuttuvia havaintoja
@@ -95,7 +95,7 @@ missing_data_test <- LittleMCAR(round8_subset_full)
 round8_subset <- round8_subset_full[complete.cases(round8_subset_full),]
 ```
 
-Havainto kyseisestä muuttujasta puuttuu $34$ tilastoyksiköltä. Kun aineistosta on pudotettu puuttuvat havainnot (tarkastellaan tätä tarkemmin myöhemmin), havaitaan, että aineiston mukaan suomalaiset tuntevat keskimääräisesti (vastausten ka. $`r round(mean(as.numeric(round8_subset[,2])),2)`$) paljon vastuuta ilmastonmuutoksen ehkäisemisestä (kts. Kaavio 1). 
+Havainto kyseisestä muuttujasta puuttuu $34$ tilastoyksiköltä. Kun aineistosta on pudotettu puuttuvat havainnot (havaintojen pudottamista tarkastellaan tarkemmin myöhemmin), havaitaan, että aineiston mukaan suomalaiset tuntevat keskimääräisesti (vastausten ka. $`r round(mean(as.numeric(round8_subset[,1])),2)`$) paljon vastuuta ilmastonmuutoksen ehkäisemisestä (kts. Kaavio 1). 
 
 ```{r fig.width=6, fig.caption="\\label{fig:figs}Henkilökohtainen vastuu"}
 ggplot(data=round8_subset, aes(round8_subset$personal_responsibility))+ labs(title="", x="", y="f", caption="Kaavio 1: Henkilökohtainen vastuu ilmastonmuutoksesta.") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=10))
@@ -103,31 +103,31 @@ ggplot(data=round8_subset, aes(round8_subset$personal_responsibility))+ labs(tit
 
 \vspace{0.75cm}
 
-Pyritään ensin tarkastelemaan miten muuttuja `D28. How likely do you think it is that governments in enough countries will take action that reduces climate change?` eli se "kuinka todennäköisenä pitää sitä, että riittävän monen maan hallitus toimii ilmastomuutoksen hillitsemiseksi" vaikuttaa vastaajan omaan vastuun kokemiseen ilmastonmuutoksen vähentämisestä. Kyseinen muuttuja on niin ikään 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan todennäköisenä" ja luokka 11 vastausta "hyvin todennäköisenä".
+Analyysissa pyrimme ensin tarkastelemaan miten muuttuja `D28. How likely do you think it is that governments in enough countries will take action that reduces climate change?` eli se "kuinka todennäköisenä pitää sitä, että riittävän monen maan hallitus toimii ilmastomuutoksen hillitsemiseksi" vaikuttaa vastaajan omaan vastuunottoon ilmastonmuutoksen vähentämisestä. Kyseinen muuttuja on myös 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan todennäköisenä" ja luokka 11 vastausta "hyvin todennäköisenä".
 
-Tämän jälkeen tarkastellaan, miten näiden kysymysten välinen yhteys muuttuu, kun vastaajan käsitys ilmastonmuutoksen syistä huomioidaan. Käsitystä mitataan muuttujalla `D22. Do you think that climate change is caused by natural processes, human activity, or both?` eli "uskotko ilmastonmuutoksen aiheutuvan luonnollisista prosesseista, ihmisen toiminnasta vai molemmista".
+Tämän jälkeen tarkastelemme, miten näiden kysymysten välinen yhteys muuttuu, kun vastaajan käsitys ilmastonmuutoksen syistä huomioidaan. Käsitystä mitataan muuttujalla `D22. Do you think that climate change is caused by natural processes, human activity, or both?` eli "uskotko ilmastonmuutoksen aiheutuvan luonnollisista prosesseista, ihmisen toiminnasta vai molemmista".
 
 Ilmastonmuutoksen syiden mittaamiseen on käytetty viisiluokkaista ordinaalista muuttujaa, jossa luokka 1 vastaa vastausta "kokonaan luonnollisista prosesseista", luokka 3 vastausta "yhtä paljon luonnollisista prosesseista ja ihmisen toiminnasta" ja luokka 5 vastausta "kokonaan ihmisen toiminnasta". Lisäksi muuttujassa on kuudes luokka "en usko ilmastonmuutokseen", mutta tässä luokassa ei Suomen aineistossa ole yhtään vastausta (kun vastemuuttujan `D23` puuttuvat havainnot poistetaan).
 
-Lisäksi pyrimme tarkastelemaan taustamuuttujien 
+Lisäksi pyrimme tutkimaan taustamuuttujien 
 
-* **ikä** (`ika`), jatkuva ja numeerinen, vaihteluväli $`r min(as.numeric(round8_subset$age))`$ &ndash; $`r max(as.numeric(round8_subset$age))`$,
-* **sukupuoli** (`sukupuoli`), kategorinen, kaksiluokkainen,
+* ikä (`ika`), jatkuva ja numeerinen, vaihteluväli $`r min(as.numeric(round8_subset$age))`$ &ndash; $`r max(as.numeric(round8_subset$age))`$,
+* sukupuoli (`sukupuoli`), kategorinen, kaksiluokkainen,
 
-vaikutusta henkilökohtaisen ilmastovastuun kokemiseen. Kun tarkastellaan kaikkia analyysiin valittuja muuttujia, havaitaan, että puuttuvia havaintoja löytyy $24$ eri luokkakombinaatiosta yhteensä $122$ kappaletta. Jatketaan pudottamalla nämä tilastoyksiköt tarkastelusta. Päädytään tilanteeseen, jossa tilastoyksikköjä on jäljellä $n_{compelete} = 1752$. Vaikka esimerkiksi Littlen MCAR-testin \footnotemark &nbsp; antaman $\chiˆ2$-testisuureen arvon $415.90$ perusteella ei voida olettaa havaintojen puuttyvan täysin satunnaisesti, jatketaan kuitenkin aineistolla, josta on poistettu puuttuvat havainnot ja huomioidaan tämä johtopäätöksissä. 
+vaikutusta henkilökohtaisen ilmastovastuun kokemiseen. Kun tarkastelemme kaikkia analyysiin valittuja muuttujia, havaitsemme, että puuttuvia havaintoja löytyy $24$ eri luokkakombinaatiosta yhteensä $122$ kappaletta. Jatketaan pudottamalla nämä tilastoyksiköt tarkastelusta. Päädymme tilanteeseen, jossa tilastoyksikköjä on jäljellä $n_{compelete} = 1752$. Vaikka esimerkiksi Littlen MCAR-testin \footnotemark &nbsp; antaman $\chiˆ2$-testisuureen arvon $415.90$ perusteella ei voida olettaa havaintojen puuttyvan täysin satunnaisesti, jatkamme kuitenkin aineistolla, josta on poistettu puuttuvat havainnot ja huomioimme tämä johtopäätöksissä. 
 
 \footnotetext{Little, Roderick J. A., 1988: "A Test of Missing Completely at Random for Multivariate Data with Missing Values", *Journal of the American Statistical Association*,
 Vol. 83, No. 404 (Dec., 1988), pp. 1198-1202.}
 
-Pitääksemme analyysin yksinkertaisena, rajoitamme tarkastelun näihin kahteen taustamuuttujaa. Lisäksi muuttujien välistä korrelaatiota (Taulukko 1) tarkastelemalla havaitaan, ettei selittävien muuttujien välillä ole niin suurta korrelaatiota, että jokin muuttujista olisi perustettua jättää tarkastelun ulkopuolelle multikollineaarisuuden välttämiseksi. Samalla huomaamme, että suurin korrelaatio löytyy vastemuuttujan `D23` ja iän sekä ilmastonmuutoksen syyn välille. Muuttujien valinta vaikuttaa siis tässä suhteessa järkevältä. 
+Pitääksemme analyysin yksinkertaisena, rajoitamme tarkastelun näihin kahteen taustamuuttujaa. Lisäksi muuttujien välistä korrelaatiota (Taulukko 1) tarkastelemalla havaitsemme, ettei selittävien muuttujien välillä ole niin suurta korrelaatiota, että jokin muuttujista olisi perustettua jättää tarkastelun ulkopuolelle multikollineaarisuuden välttämiseksi. Samalla huomaamme, että suurin korrelaatio löytyy vastemuuttujan `D23` ja iän sekä ilmastonmuutoksen syyn välille. Muuttujien valinta vaikuttaa siis tässä suhteessa järkevältä. 
 
-Koska pyrimme mallintamaan ordinaalisten muuttujien välistä yhteyttä erilaisilla yleistetyillä lineaarisilla logit- ja probit-malleilla, vähennetään alkuperäisten muuttujien luokkia, jotta mallien sovittaminen pysyy sekä laskennallisesti että tulkinnallisesti riittävän yksinkertaisena.
+Koska pyrimme mallintamaan ordinaalisten muuttujien välistä yhteyttä erilaisilla yleistetyillä lineaarisilla logit- ja probit-malleilla, vähennämme alkuperäisten muuttujien luokkia, jotta mallien sovittaminen pysyy sekä laskennallisesti että tulkinnallisesti riittävän yksinkertaisena.
 
-Ordinaalisten muuttujien `D23` (vastuuta mittaava vastemuuttuja) ja `D28` ("tarpeeksi moni hallitus") kohdalla päädytään mahdollisimman tasaiseen luokkajakoon, jossa luokat $0-3$ yhdistetään alimmaksi luokaksi, luokat $4-6$ keskimmäiseksi luokaksi ja luokat $7-10$ ylimmäksi luokaksi. 
+Ordinaalisten muuttujien `D23` (vastuuta mittaava vastemuuttuja) ja `D28` ("tarpeeksi moni hallitus") kohdalla päädymme mahdollisimman tasaiseen luokkajakoon, jossa luokat $0-3$ yhdistetään alimmaksi luokaksi, luokat $4-6$ keskimmäiseksi luokaksi ja luokat $7-10$ ylimmäksi luokaksi. 
 
-Viisiluokkaisen (koska luokkaan "en usko ilmastonmuutokseen" ei kuulu yhtään tilastoyksikköä) ilmastonmuutoksen syitä mittaavan muuttujan `D22` kohdalla päädytään myös kolmiluokkaiseen jakoon, jossa luokka $1$ sisältää vastaukset, joiden mukaan ilmastonmuutos aiheutuu joko kokonaan tai pääosin luonnollisista prosesseista, luokka $2$ sisältää vastauksen, jonka mukaan ilmastonmuutos on yhtä paljon luonnon ja ihmisen aiheuttamaa ja luokka $3$ vastaukset, joiden mukaan ilmastonmuutos on pääasiassa tai kokonaan ihmisen aiheuttamaa.
+Viisiluokkaisen (koska luokkaan "en usko ilmastonmuutokseen" ei kuulu yhtään tilastoyksikköä) ilmastonmuutoksen syitä mittaavan muuttujan `D22` kohdalla päädymme myös kolmiluokkaiseen jakoon, jossa luokka $1$ sisältää vastaukset, joiden mukaan ilmastonmuutos aiheutuu joko kokonaan tai pääosin luonnollisista prosesseista, luokka $2$ sisältää vastauksen, jonka mukaan ilmastonmuutos on yhtä paljon luonnon ja ihmisen aiheuttamaa ja luokka $3$ vastaukset, joiden mukaan ilmastonmuutos on pääasiassa tai kokonaan ihmisen aiheuttamaa.
 
-Lisäksi jaetaan jatkuva ikämuuttuja neljöäöän luokkaan niin, että ensimmäiseen luokkaan sijoittuvat alle 31-vuotiaat, toiseen luokkaan 31-44-vuotiaat, kolmanteen luokkaan 45-64-vuotiaat ja neljänteen luokkaan yli 64-vuotiaat.
+Lisäksi jaamme jatkuvan ikämuuttujan neljään luokkaan niin, että ensimmäiseen luokkaan sijoittuvat alle 31-vuotiaat, toiseen luokkaan 31-44-vuotiaat, kolmanteen luokkaan 45-64-vuotiaat ja neljänteen luokkaan yli 64-vuotiaat.
 
 ```{r}
 # Muunnetaan faktoriaineisto numeeriseksi
