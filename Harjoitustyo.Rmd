@@ -37,6 +37,7 @@ library(caret)
 
 # Puuttuva datan käsittely
 library(MissMech)
+library(BaylorEdPsych)
 
 # Nätimmät plotit
 library(ggplot2)
@@ -67,41 +68,34 @@ round8 <- read.spss("ESS8e01.sav", to.data.frame=TRUE)
 
 ```{r}
 # Subsetataan Suomen data harjoitustyötä varten
-round8_subset <- subset(round8, round8$cntry=="Finland")
+round8_subset_full <- subset(round8, round8$cntry=="Finland")
 
 # Valitaan muuttujat
-round8_variables <- c("ccnthum","ccrdprs","gvsrdcc","gndr", "agea", "edulvlb", "hinctnta", "lrscale")
-round8_subset <- round8_subset[round8_variables]
+round8_variables <- c("ccrdprs","gvsrdcc","ccnthum","gndr", "agea", "edulvlb", "hinctnta", "lrscale")
+round8_subset_full <- round8_subset_full[round8_variables]
 
 # Annetaan muuttujille inhimillisemmät nimet
-round8_new_variable_names <- c("caused_by","personal_responsibility","government_action","gender","age","education","income","politics")
-round8_finnish_variable_names <- c("syy","vastuu","hallitus","sukupuoli","ika","koulutus","tulot","politiikka")
+round8_new_variable_names <- c("personal_responsibility","government_action","caused_by","gender","age","education","income","politics")
+round8_finnish_variable_names <- c("D23: vastuu","D28: hallitus","D22: syy","sukupuoli","ika","koulutus","tulot","politiikka")
 
-colnames(round8_subset) <- round8_new_variable_names
+colnames(round8_subset_full) <- round8_new_variable_names
 
 # Ja käännetään levelit suomeksi
-personal_responsibility_finnish_levels <- levels(round8_subset$personal_responsibility)
+personal_responsibility_finnish_levels <- levels(round8_subset_full$personal_responsibility)
 personal_responsibility_finnish_levels[1] <- "En lainkaan"
 personal_responsibility_finnish_levels[11] <- "Hyvin paljon"
-levels(round8_subset$personal_responsibility) <- personal_responsibility_finnish_levels
+levels(round8_subset_full$personal_responsibility) <- personal_responsibility_finnish_levels
 ```
 
 Suomen aineisto sisältää $n = 1925$ tilastoyksikköä, joilta kultakin on kerättyä tietoa $499$ muuttujasta. Tutkiessamme suomalaisten henkilökohtaista ilmastovastuuta päämielenkiintomme kohdistuu muuttujaan `D23. To what extent do you feel a personal responsibility to try to reduce climate change?` eli "kuinka paljon tunnet henkilökohtaista vastuuta ilmastonmuutokset vähentämiseksi?". Muuttuja on 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan" ja luokka 11 vastausta "hyvin paljon".
 
-Havainto kyseisestä muuttujasta puuttuu $34$ tilastoyksiköltä. Kun tarkastellaan ... tukee pudottamista. 
-
-MissMech: An R Package for Testing Homoscedasticity, Multivariate Normality, and
-Missing Completely at Random (MCAR)
-Mortaza Jamshidian 2014
-Journal of Statistical Softwares
-January 2014, Volume 56, Issue 6.
-
-```{r}
+```{r include=FALSE}
 # Tiputetaan havainnot joissa kysymysmuuttujissa puuttuvia havaintoja
-round8_subset <- round8_subset[complete.cases(round8_subset),]
+missing_data_test <- LittleMCAR(round8_subset_full)
+round8_subset <- round8_subset_full[complete.cases(round8_subset_full),]
 ```
 
-Kun aineistosta on pudotettu puuttuvat havainnot, havaitaan, että aineiston mukaan suomalaiset tuntevat keskimääräisesti (vastausten ka. $`r round(mean(as.numeric(round8_subset[,2])),2)`$) paljon vastuuta ilmastonmuutoksen ehkäisemisestä (kts. Kaavio 1). 
+Havainto kyseisestä muuttujasta puuttuu $34$ tilastoyksiköltä. Kun aineistosta on pudotettu puuttuvat havainnot (tarkastellaan tätä tarkemmin myöhemmin), havaitaan, että aineiston mukaan suomalaiset tuntevat keskimääräisesti (vastausten ka. $`r round(mean(as.numeric(round8_subset[,2])),2)`$) paljon vastuuta ilmastonmuutoksen ehkäisemisestä (kts. Kaavio 1). 
 
 ```{r fig.width=6, fig.caption="\\label{fig:figs}Henkilökohtainen vastuu"}
 ggplot(data=round8_subset, aes(round8_subset$personal_responsibility))+ labs(title="", x="", y="f", caption="Kaavio 1: Henkilökohtainen vastuu ilmastonmuutoksesta.") + geom_bar(fill="steelblue") + theme(plot.title = element_text(size=10))
@@ -120,14 +114,20 @@ Lisäksi pyrimme tarkastelemaan taustamuuttujien
 * **ikä** (`ika`), jatkuva ja numeerinen, vaihteluväli $`r min(as.numeric(round8_subset$age))`$ &ndash; $`r max(as.numeric(round8_subset$age))`$,
 * **sukupuoli** (`sukupuoli`), kategorinen, kaksiluokkainen,
 
-vaikutusta henkilökohtaisen ilmastovastuun kokemiseen.  Muuttujien välistä korrelaatiota (Taulukko 1) tarkastelemalla havaitaan, TODO: JOTAIN ETTÄ PIDETÄÄN YKSINKERTAISENA. Korrelaatiotarkastelua ei nyt varmaan tällaisilla muuttujilla tarvita?
+vaikutusta henkilökohtaisen ilmastovastuun kokemiseen. Kun tarkastellaan kaikkia analyysiin valittuja muuttujia, havaitaan, että puuttuvia havaintoja löytyy $24$ eri luokkakombinaatiosta yhteensä $122$ kappaletta. Jatketaan pudottamalla nämä tilastoyksiköt tarkastelusta. Päädytään tilanteeseen, jossa tilastoyksikköjä on jäljellä $n_{compelete} = 1752$. Vaikka esimerkiksi Littlen MCAR-testin \footnotemark &nbsp; antaman $\chiˆ2$-testisuureen arvon $415.90$ perusteella ei voida olettaa havaintojen puuttyvan täysin satunnaisesti, jatketaan kuitenkin aineistolla, josta on poistettu puuttuvat havainnot ja huomioidaan tämä johtopäätöksissä. 
 
-Koska ... vähennetään luokkia. Molemmat muuttujat ordinaalisia, 
-henkilökohtainen vastuu 0-10 (11 luokkaa),
-tarpeeksi monen maan hallituksen toimet 0-10 (11 luokkaa)
-=> logit malli, koska ordinaalinen, kumulatiivinen logit
-Kolmiluokkainen vaikuttaa järkevältä, (tähän varmaan perusteet miksi tehty),
-luokitellaan 4-3-4.
+\footnotetext{Little, Roderick J. A., 1988: "A Test of Missing Completely at Random for Multivariate Data with Missing Values", *Journal of the American Statistical Association*,
+Vol. 83, No. 404 (Dec., 1988), pp. 1198-1202.}
+
+Pitääksemme analyysin yksinkertaisena, rajoitamme tarkastelun näihin kahteen taustamuuttujaa. Lisäksi muuttujien välistä korrelaatiota (Taulukko 1) tarkastelemalla havaitaan, ettei selittävien muuttujien välillä ole niin suurta korrelaatiota, että jokin muuttujista olisi perustettua jättää tarkastelun ulkopuolelle multikollineaarisuuden välttämiseksi. Samalla huomaamme, että suurin korrelaatio löytyy vastemuuttujan `D23` ja iän sekä ilmastonmuutoksen syyn välille. Muuttujien valinta vaikuttaa siis tässä suhteessa järkevältä. 
+
+Koska pyrimme mallintamaan ordinaalisten muuttujien välistä yhteyttä erilaisilla yleistetyillä lineaarisilla logit- ja probit-malleilla, vähennetään alkuperäisten muuttujien luokkia, jotta mallien sovittaminen pysyy sekä laskennallisesti että tulkinnallisesti riittävän yksinkertaisena.
+
+Ordinaalisten muuttujien `D23` (vastuuta mittaava vastemuuttuja) ja `D28` ("tarpeeksi moni hallitus") kohdalla päädytään mahdollisimman tasaiseen luokkajakoon, jossa luokat $0-3$ yhdistetään alimmaksi luokaksi, luokat $4-6$ keskimmäiseksi luokaksi ja luokat $7-10$ ylimmäksi luokaksi. 
+
+Viisiluokkaisen (koska luokkaan "en usko ilmastonmuutokseen" ei kuulu yhtään tilastoyksikköä) ilmastonmuutoksen syitä mittaavan muuttujan `D22` kohdalla päädytään myös kolmiluokkaiseen jakoon, jossa luokka $1$ sisältää vastaukset, joiden mukaan ilmastonmuutos aiheutuu joko kokonaan tai pääosin luonnollisista prosesseista, luokka $2$ sisältää vastauksen, jonka mukaan ilmastonmuutos on yhtä paljon luonnon ja ihmisen aiheuttamaa ja luokka $3$ vastaukset, joiden mukaan ilmastonmuutos on pääasiassa tai kokonaan ihmisen aiheuttamaa.
+
+Lisäksi jaetaan jatkuva ikämuuttuja neljöäöän luokkaan niin, että ensimmäiseen luokkaan sijoittuvat alle 31-vuotiaat, toiseen luokkaan 31-44-vuotiaat, kolmanteen luokkaan 45-64-vuotiaat ja neljänteen luokkaan yli 64-vuotiaat.
 
 ```{r}
 # Muunnetaan faktoriaineisto numeeriseksi
@@ -138,7 +138,7 @@ round8_numeric <- as.data.frame(sapply(round8_subset[1:5], as.numeric))
 #round8_numeric <- cbind(round8_numeric[1:4], as.numeric(as.character(round8_numeric$age)), round8_numeric[6:8])
 
 colnames(round8_numeric) <- round8_finnish_variable_names[1:5]
-kable(round(cor(round8_numeric),3), caption="Taulukko 1: Muuttujien väliset korrelaatiot.")
+kable(round(cor(round8_numeric),3), caption="Muuttujien väliset korrelaatiot.")
 colnames(round8_numeric) <- round8_new_variable_names[1:5]
 ```
 
@@ -161,7 +161,7 @@ round8_numeric_freq_2 <- as.data.frame(xtabs( ~ government_action + personal_res
 round8_2 <- reshape(round8_numeric_freq_2, timevar = "personal_responsibility", idvar = c("government_action", "caused_by", "gender", "age"), direction = "wide")
 ```
 
-```{r}
+```{r include=FALSE}
 #Kuvailevaa tarkastelua vasteen suhteen
 xtabs(~government_action+gender, data = round8)
 kable(CrossTable(round8_numeric$personal_responsibility,round8_numeric$government_action,digits=2,prop.t = TRUE,prop.chisq =  FALSE, format = "SPSS"))
@@ -170,12 +170,13 @@ kable(CrossTable(round8_numeric$personal_responsibility,round8_numeric$age,digit
 kable(CrossTable(round8_numeric$personal_responsibility,round8_numeric$caused_by,digits=2,prop.t = TRUE,prop.chisq =  FALSE, format = "SPSS"))
 ```
 
-
 ```{r}
 # Poistetaan nollafrekvenssit
 round8 <- round8[!(round8$Freq.1 == 0 & round8$Freq.2 == 0 & round8$Freq.3 == 0),]
 round8_2 <- round8_2[!(round8_2$Freq.1 == 0 & round8_2$Freq.2 == 0 & round8_2$Freq.3 == 0),]
 ```
+
+Ristiintaulukoimalla ... muuttujan  ... kun TARKASTELEMME LUOKKIA KOLMANNEN MUUTTUJAN SUHTEEN. => ANALYYSI ON JÄRKEVÄ.
 
 # Tutkimuskysymyksen mallintaminen
 
@@ -351,7 +352,7 @@ logLik(ad4)
 #malli menee merkitsev?sti huonommaks eli ad3 on paras
 ```
 
-```{r}
+```{r include=FALSE}
 #Tyydyt??n ad3 malliin ja tarkastellaan sen residuaaleja
 plot(residuals(ad3))
 resid(ad3)
@@ -507,7 +508,7 @@ summary(adcat1)
 
 Tulkintaa: Syyn ottaminen mukaan malliin => Vakiotermit eivät ole merkitseviä. Eli responsibility-luokan vaikutus oddsiin voi johtua sattumasta. Caused-by muuttujan tulkinta erilainen, koska ei ordinaalinen. Caused_by vaikuttaa merkitsevästi niin, että mitä enemmän uskoo ihmisen aiheuttavan ilmastonmuutosta sitä enemmän henkilökohtaista vastuuta kokee vastuuta ilmastonmuutoksen ehkäisemisestä. Sukupuoli ja ikä kuten aikaisemmassa mallissa, mutta caused_by 
 
-```{r}
+```{r include=FALSE}
 #Tyydyt??n adcat1 malliin ja tarkastellaan sen residuaaleja
 plot(residuals(adcat1))
 resid(adcat1)
