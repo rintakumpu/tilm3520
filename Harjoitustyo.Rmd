@@ -123,7 +123,7 @@ vaikutusta henkilökohtaisen ilmastovastuun kokemiseen. Kun tarkastelemme kaikki
 \footnotetext{Little, Roderick J. A., 1988: "A Test of Missing Completely at Random for Multivariate Data with Missing Values", *Journal of the American Statistical Association*,
 Vol. 83, No. 404 (Dec., 1988), pp. 1198-1202.}
 
-Pitääksemme analyysin yksinkertaisena, rajoitamme tarkastelun kahteen taustamuuttujaa. Lisäksi muuttujien välistä korrelaatiota (Taulukko 1) tarkastelemalla havaitsemme, ettei selittävien muuttujien välillä ole niin suuria korrelaatioita, että jokin muuttujista olisi perustettua jättää tarkastelun ulkopuolelle multikollineaarisuuden välttämiseksi. Samalla huomaamme, että suurin korrelaatio löytyy vastemuuttujan `D23` ja iän sekä ilmastonmuutoksen syyn välille. Muuttujien valinta vaikuttaa siis tässä suhteessa järkevältä. 
+Pitääksemme analyysin yksinkertaisena, rajoitamme tarkastelun kahteen taustamuuttujaa. Lisäksi muuttujien välistä korrelaatiota (Taulukko 1) tarkastelemalla havaitsemme, ettei selittävien muuttujien välillä ole niin suuria korrelaatioita, että jokin muuttujista olisi perustettua jättää tarkastelun ulkopuolelle multikollineaarisuuden välttämiseksi. Samalla huomaamme, että suurin korrelaatio löytyy vastemuuttujan `D23: vastuu` ja sukupuolen välille sekä vastemuuttujan ja muuttujan `D22: syy` välille. Muuttujien valinta vaikuttaa siis tässä suhteessa järkevältä. 
 
 \newpage
 
