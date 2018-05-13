@@ -87,7 +87,7 @@ personal_responsibility_finnish_levels[11] <- "Hyvin paljon"
 levels(round8_subset_full$personal_responsibility) <- personal_responsibility_finnish_levels
 ```
 
-Suomen aineisto sisältää $n = 1925$ tilastoyksikköä, joista on kerättyä tietoa $499$ muuttujasta. Tutkiessamme suomalaisten henkilökohtaista ilmastovastuuta päämielenkiintomme kohdistuu muuttujaan `D23. To what extent do you feel a personal responsibility to try to reduce climate change?` eli "kuinka paljon tunnet henkilökohtaista vastuuta ilmastonmuutokset vähentämisestä?". Muuttuja on 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan" ja luokka 11 vastausta "hyvin paljon".
+Suomen aineisto sisältää $n = 1925$ tilastoyksikköä, joilta on kerättyä tietoa $499$ muuttujasta. Tutkiessamme suomalaisten henkilökohtaista ilmastovastuuta päämielenkiintomme kohdistuu muuttujaan `D23. To what extent do you feel a personal responsibility to try to reduce climate change?` eli "kuinka paljon tunnet henkilökohtaista vastuuta ilmastonmuutokset vähentämisestä?". Muuttuja on 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan" ja luokka 11 vastausta "hyvin paljon".
 
 ```{r include=FALSE}
 # Tiputetaan havainnot joissa kysymysmuuttujissa puuttuvia havaintoja
@@ -107,23 +107,23 @@ ggplot(data=round8_subset, aes(round8_subset$personal_responsibility))+ labs(tit
 
 \vspace{0.75cm}
 
-Analyysissa pyrimme ensin tarkastelemaan miten muuttuja `D28. How likely do you think it is that governments in enough countries will take action that reduces climate change?` eli se "kuinka todennäköisenä pitää sitä, että riittävän monen maan hallitus toimii ilmastomuutoksen hillitsemiseksi" vaikuttaa vastaajan omaan vastuunottoon ilmastonmuutoksen vähentämisestä. Kyseinen muuttuja on myös 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan todennäköisenä" ja luokka 11 vastausta "hyvin todennäköisenä".
+Analyysissa pyrimme ensin tarkastelemaan miten muuttuja `D28. How likely do you think it is that governments in enough countries will take action that reduces climate change?` eli se "kuinka todennäköisenä pitää sitä, että riittävän monen maan hallitus toimii ilmastomuutoksen hillitsemiseksi" vaikuttaa vastaajan omaan vastuunottoon ilmastonmuutoksen vähentämisestä. Kyseinen muuttuja on 11-luokkainen ordinaalinen muuttuja, jossa luokka 1 vastaa vastausta "en lainkaan todennäköisenä" ja luokka 11 vastausta "hyvin todennäköisenä".
 
-Tämän jälkeen tarkastelemme, miten näiden kysymysten välinen yhteys muuttuu, kun vastaajan käsitys ilmastonmuutoksen syistä huomioidaan. Käsitystä mitataan muuttujalla `D22. Do you think that climate change is caused by natural processes, human activity, or both?` eli "uskotko ilmastonmuutoksen aiheutuvan luonnollisista prosesseista, ihmisen toiminnasta vai molemmista".
-
-Ilmastonmuutoksen syiden mittaamiseen on käytetty viisiluokkaista ordinaalista muuttujaa, jossa luokka 1 vastaa vastausta "kokonaan luonnollisista prosesseista", luokka 3 vastausta "yhtä paljon luonnollisista prosesseista ja ihmisen toiminnasta" ja luokka 5 vastausta "kokonaan ihmisen toiminnasta". Lisäksi muuttujassa on kuudes luokka "en usko ilmastonmuutokseen", mutta tässä luokassa ei Suomen aineistossa ole yhtään vastausta (kun vastemuuttujan `D23` puuttuvat havainnot poistetaan).
+Tämän jälkeen tarkastelemme, miten näiden kysymysten välinen yhteys muuttuu, kun vastaajan käsitys ilmastonmuutoksen syistä huomioidaan. Tätä käsitystä mitataan viisiluokkaisella ordinaalisella muuttujalla `D22. Do you think that climate change is caused by natural processes, human activity, or both?` eli "uskotko ilmastonmuutoksen aiheutuvan luonnollisista prosesseista, ihmisen toiminnasta vai molemmista". Luokka 1 vastaa vastausta "kokonaan luonnollisista prosesseista", luokka 3 vastausta "yhtä paljon luonnollisista prosesseista ja ihmisen toiminnasta" ja luokka 5 vastausta "kokonaan ihmisen toiminnasta". Lisäksi muuttujassa on kuudes luokka "en usko ilmastonmuutokseen", mutta tässä luokassa ei Suomen aineistossa ole yhtään vastausta (kun vastemuuttujan `D23` puuttuvat havainnot poistetaan).
 
 Lisäksi pyrimme tutkimaan taustamuuttujien 
 
-* ikä (`ika`), jatkuva ja numeerinen, vaihteluväli $`r min(as.numeric(round8_subset$age))`$ &ndash; $`r max(as.numeric(round8_subset$age))`$,
+* ikä (`ika`), jatkuva numeerinen, vaihteluväli $`r min(as.numeric(round8_subset$age))`$ &ndash; $`r max(as.numeric(round8_subset$age))`$,
 * sukupuoli (`sukupuoli`), kategorinen, kaksiluokkainen,
 
-vaikutusta henkilökohtaisen ilmastovastuun kokemiseen. Kun tarkastelemme kaikkia analyysiin valittuja muuttujia, havaitsemme, että puuttuvia havaintoja löytyy $24$ eri luokkakombinaatiosta yhteensä $122$ kappaletta. Jatketaan pudottamalla nämä tilastoyksiköt tarkastelusta. Päädymme tilanteeseen, jossa tilastoyksikköjä on jäljellä $n_{compelete} = 1752$. Vaikka esimerkiksi Littlen MCAR-testin \footnotemark &nbsp; antaman $\chiˆ2$-testisuureen arvon $415.90$ perusteella ei voida olettaa havaintojen puuttyvan täysin satunnaisesti, jatkamme kuitenkin aineistolla, josta on poistettu puuttuvat havainnot ja huomioimme tämä johtopäätöksissä. 
+vaikutusta henkilökohtaisen ilmastovastuun kokemiseen. Kun tarkastelemme kaikkia analyysiin valittuja muuttujia, havaitsemme, että puuttuvia havaintoja löytyy $24$ eri luokkakombinaatiosta yhteensä $122$ kappaletta. Jatkamme pudottamalla nämä tilastoyksiköt tarkastelusta, jolloin päädymme tilanteeseen, jossa tilastoyksikköjä on jäljellä $n_{compelete} = 1752$. Vaikka esimerkiksi Littlen MCAR-testin \footnotemark &nbsp; antaman $\chiˆ2$-testisuureen arvon $415.90$ perusteella ei voida olettaa havaintojen puuttyvan täysin satunnaisesti, jatkamme kuitenkin aineistolla, josta on poistettu puuttuvat havainnot ja huomioimme tämä johtopäätöksissä. 
 
 \footnotetext{Little, Roderick J. A., 1988: "A Test of Missing Completely at Random for Multivariate Data with Missing Values", *Journal of the American Statistical Association*,
 Vol. 83, No. 404 (Dec., 1988), pp. 1198-1202.}
 
-Pitääksemme analyysin yksinkertaisena, rajoitamme tarkastelun näihin kahteen taustamuuttujaa. Lisäksi muuttujien välistä korrelaatiota (Taulukko 1) tarkastelemalla havaitsemme, ettei selittävien muuttujien välillä ole niin suurta korrelaatiota, että jokin muuttujista olisi perustettua jättää tarkastelun ulkopuolelle multikollineaarisuuden välttämiseksi. Samalla huomaamme, että suurin korrelaatio löytyy vastemuuttujan `D23` ja iän sekä ilmastonmuutoksen syyn välille. Muuttujien valinta vaikuttaa siis tässä suhteessa järkevältä. 
+Pitääksemme analyysin yksinkertaisena, rajoitamme tarkastelun kahteen taustamuuttujaa. Lisäksi muuttujien välistä korrelaatiota (Taulukko 1) tarkastelemalla havaitsemme, ettei selittävien muuttujien välillä ole niin suuria korrelaatioita, että jokin muuttujista olisi perustettua jättää tarkastelun ulkopuolelle multikollineaarisuuden välttämiseksi. Samalla huomaamme, että suurin korrelaatio löytyy vastemuuttujan `D23` ja iän sekä ilmastonmuutoksen syyn välille. Muuttujien valinta vaikuttaa siis tässä suhteessa järkevältä. 
+
+\newpage
 
 ```{r}
 # Muunnetaan faktoriaineisto numeeriseksi, paitsi
@@ -149,7 +149,7 @@ round8_numeric$government_action <- cut(round8_numeric$government_action, breaks
 round8_numeric$caused_by <- cut(round8_numeric$caused_by, breaks=c(0,2,3,Inf), labels=FALSE)
 ```
 
-Koska pyrimme mallintamaan ordinaalisten muuttujien välistä yhteyttä erilaisilla yleistetyillä lineaarisilla logit- ja probit-malleilla, vähennämme alkuperäisten muuttujien luokkia, jotta mallien sovittaminen pysyy sekä laskennallisesti että tulkinnallisesti riittävän yksinkertaisena.
+Koska pyrimme mallintamaan ordinaalisten muuttujien välistä yhteyttä erilaisilla yleistetyillä lineaarisilla logit- ja probit-malleilla, vähennämme alkuperäisten muuttujien luokkia, jotta mallien sovittaminen pysyy sekä laskennallisesti että tulkinnallisesti hallittavana.
 
 Ordinaalisten muuttujien `D23` (vastuuta mittaava vastemuuttuja) ja `D28` ("tarpeeksi moni hallitus") kohdalla päädymme mahdollisimman tasaiseen luokkajakoon, jossa luokat $0-3$ yhdistetään alimmaksi luokaksi, luokat $4-6$ keskimmäiseksi luokaksi ja luokat $7-10$ ylimmäksi luokaksi. 
 
@@ -157,7 +157,7 @@ Viisiluokkaisen (koska luokkaan "en usko ilmastonmuutokseen" ei kuulu yhtään t
 
 Lisäksi jaamme jatkuvan ikämuuttujan neljään luokkaan niin, että ensimmäiseen luokkaan sijoittuvat alle 31-vuotiaat, toiseen luokkaan 31-44-vuotiaat, kolmanteen luokkaan 45-64-vuotiaat ja neljänteen luokkaan yli 64-vuotiaat.
 
-Kun tarkastellaan henkilökohtaista ilmastovastuuta muiden muuttujien suhteen eri luokkien suhteen ennen kuin myös vastemuuttujan luokkia vähennetään (Taulukot) huomataan että TÄMÄ VIELÄ JAKSAA JAKSAA TODO
+Kun tarkastelemme henkilökohtaista ilmastovastuuta muiden muuttujien suhteen eri luokkien suhteen ennen kuin myös vastemuuttujan luokkia vähennetään (Taulukot) huomataan että TÄMÄ VIELÄ JAKSAA JAKSAA TODO
 
 \vspace{1cm}
 
@@ -230,7 +230,7 @@ levels(round8_numeric$personal_responsibility) <- personal_responsibility_finnis
 
 \vspace{1cm}
 
-Seuraavaksi siirrymme mallintamaan ja tarkastelemaan havaittujen erojen tilastollista merkitsevyyttä (sekä mahdollisia eroja muuttujien yhdysvaikutuksissa).
+Seuraavaksi siirrymme mallintamaan tilannetta sekä tarkastelemaan tässä havaittujen erojen tilastollista merkitsevyyttä (sekä mahdollisia eroja muuttujien yhdysvaikutuksissa).
 
 ```{r}
 # Numeeristetaan ja pätkitään myös vastemuuttuja
@@ -263,11 +263,11 @@ round8 <- round8[!(round8$Freq.1 == 0 & round8$Freq.2 == 0 & round8$Freq.3 == 0)
 round8_2 <- round8_2[!(round8_2$Freq.1 == 0 & round8_2$Freq.2 == 0 & round8_2$Freq.3 == 0),]
 ```
 
-# Tutkimuskysymyksen mallintaminen
+# Tutkimuskysymyksen mallintaminen ja mallien tulkinta
 
-Ensimmäisenä tehtävänä on tarkastella henkilökohtaisen vastuun sekä hallituksen toiminnan keskinäistä assosiaatiota. Lisäksi käytettiin ikää ja sukupuolta selittäjinä.
+Ensimmäiseksi mallinnamme henkilökohtaisen ilmastovastuun sekä käsittyksen hallitusten toiminnasta välistä yhteyttä. Käytämme myös ikää ja sukupuolta selittäjinä.
 
-Koska tarkoituksena on mallintaa ordinaalista vastetta, kokeillaan useampaa erilaista ordinaalisen aineiston mallia keskenään. Vertaillaan niitä AIC:n, BIC:n, jäännösdevianssin sekä log-uskottavuuden avulla. Kaikkien muiden vertailu arvojen kohdalla pienempi arvo on parempi, paitsi log-uskottavuuden tapauksessa suurempi arvo on parempi. Vertailussa käytetään täyttä mallia, joka ei välttämättä sellaisenaan ole kiinnostava, mutta toimii hyvin mallien vertailussa. 
+Koska tarkoituksenamme on mallintaa ordinaalista vastetta, vertailemme useampaa erilaista ordinaalisen aineiston mallia keskenään. Vertailuun käytämme AIC- ja BIC-informaatiokriteereitä, jäännösdevianssia sekä log-uskottavuutta. Kaikkien muiden vertailuarvojen kohdalla pienempi arvo viittaa parempaan malliin, mutta log-uskottavuuden tapauksessa suurempi arvo on parempi. Vertailussa käytämme hyväksi myös täyttä mallia, joka ei välttämättä ole sellaisenaan kiinnostava, mutta toimii hyvin mallien vertailussa. 
 
 ```{r include=FALSE}
 #Erilinkkien vertailu
@@ -328,19 +328,6 @@ devi<-rbind(deviance(Fullcumulativlog),deviance(AdjCatLogit),deviance(ConRatLogi
 logl<-rbind(logLik(Fullcumulativlog),logLik(AdjCatLogit),logLik(ConRatLogit), logLik(CumulativeProbit), logLik(CumulativeCloglog))
 ```
 
-Kaikkien testistatistiikoiden perusteella paras malli on viereisten kategorioiden logistinen regressiomalli. Malli on muotoa 
-
-\begin{equation}
-\text{logit}(\gamma_j) = \alpha_j + x\beta
-\end{equation},
-
-missä 
-
-\begin{equation}
-\gamma_{ij} = \frac{\pi_{ij + 1}}{\pi_{ij} + \pi_{ij+1}}
-\end{equation}.
-
-
 ```{r}
 taulu<-cbind(aic,bic,devi,logl)
 muuttujat <- c("AIC","BIC","Devianssi","Log-uskottavuus")
@@ -351,17 +338,38 @@ rownames(taulu)<-mallit
 kable(taulu)
 ```
 
+Kaikkien testistatistiikkojen perusteella paras malli on viereisten kategorioiden logistinen regressiomalli. Malli on muotoa 
 
-
-Parhaimmaksi malliksi kaikilla kriteereillä valikoitui viereisten kategorioiden logit malli. Mallin linkkifunktio on 
 \begin{equation}
-log( \frac{\pi_{ij + 1}}{\pi_{ij}}
-\end{equation}.
+\text{logit}(\gamma_j) = \alpha_j + x\beta
+\end{equation}
+
+missä 
+
+\begin{equation}
+\gamma_{ij} = \frac{\pi_{ij + 1}}{\pi_{ij} + \pi_{ij+1}}.
+\end{equation}
+
+Tästä saadaan
+
+\begin{equation}
+\text{logit}(\gamma_{ij}) = log(\frac{\pi_{ij + 1}}{\pi_{ij}})
+\end{equation},
+
+joten
+
+\begin{equation}
+\text{log}(\frac{\pi_{ij + 1}}{\pi_{ij}}) = \alpha_j + x_i^T\beta.
+\end{equation}
+
+Mallin linkkifunktio on muotoa
+\begin{equation}
+\text{log}(\frac{\pi_{ij + 1}}{\pi_{ij}}).
+\end{equation}
+
 Malli siis vertaa seuraavan kategorian todennäköisyyttä sitä edeltäneeseen kategoriaan.
 
-
-Etsitään paras selittävien muuttujien kombinaatiota aloittamalla täydestä mallista ja poistamalla siitä termejä yksi kerrallaan. Aina poistetun termin jälkeen verrataan uutta mallia edelliseen $\chi^2$-testillä parametreina devianssien erotus ja vapausasteiden ero. Näin edetään, kunnes löytyy malli, josta ei voida enää termejä poistaa ilman mallin huonontumista merkitsevästi. Tätä kutsutaan ylhäältä alas menetelmäksi. 
-Päädytään malliin, jossa on vain päävaikutukset eli selittäjinä ovat ikä, sukupuoli, hallituksen toiminta.
+Etsimme parhaan selittävien muuttujien yhdistelmän aloittamalla täydestä mallista ja poistamalla siitä termejä yksi kerrallaan ("ylhäältä alas"). Jokaisen poistetun termin jälkeen vertaamme uutta mallia edelliseen $\chi^2$-testillä parametreina devianssien erotus ja vapausasteiden erotus. Etenemme näin, kunnes löydämme mallin, josta ei voida enää poistaa termejä ilman mallin merkittävää huonontumista. Päädymme malliin, jonka selittäjinä ovat vain päävaikutukset eli ikä, sukupuoli ja hallituksien toiminta.
 
 ```{r include=FALSE}
 ##Adjacent-categories logit-malli selke?sti paras
@@ -455,49 +463,44 @@ summary(ad5)
 ```{r}
 #Tyydyt??n ad4 malliin ja tarkastellaan sen residuaaleja
 plot(residuals(ad4))
-resi<-as.data.frame(residuals(ad4))
-plot(resi)
-points(x = resi[,2], type = 'p', col = 2)
+#resi<-as.data.frame(residuals(ad4))
+#plot(resi)
+#points(x = resi[,2], type = 'p', col = 2)
 
 
 
 
 
-fits<-as.data.frame(fitted(ad4))
-plot(x = fits$Freq.1, type = 'p', col = 1)
-points(x = fits$Freq.2, type = 'p', col = 2)
-points(x = fits$Freq.3,  type = 'p', col = 3)
-abline(h = 0)
+#fits<-as.data.frame(fitted(ad4))
+#plot(x = fits$Freq.1, type = 'p', col = 1)
+#points(x = fits$Freq.2, type = 'p', col = 2)
+#points(x = fits$Freq.3,  type = 'p', col = 3)
+#abline(h = 0)
 
 
 
 #resid(ad4)
-xx<-round(fitted(ad4), 3)
-yy<-round(prop.table(as.matrix((round8[,4:6])), 1),3)
-cbind(yy,xx)
-eroo<-yy-xx
+#xx<-round(fitted(ad4), 3)
+#yy<-round(prop.table(as.matrix((round8[,4:6])), 1),3)
+#cbind(yy,xx)
+#eroo<-yy-xx
 #hist(eroo)
 #plot(eroo)
-malli<-data.frame(round8[1:3],round(fitted(ad4), 3), round(residuals(ad4),2))
-mallicol<-c("government_action","gender","age","sovite freq1","sovite freq2","sovite freq3","residuaali P2/P1","residuaali P3/P2")
-colnames(malli)<-mallicol
-malli
+#malli<-data.frame(round8[1:3],round(fitted(ad4), 3), round(residuals(ad4),2))
+#mallicol<-c("government_action","gender","age","sovite freq1","sovite freq2","sovite freq3","residuaali P2/P1","residuaali P3/P2")
+#colnames(malli)<-mallicol
+#malli
 ```
-Mallin residuaalit ovat jakautuneet tasaisesti nollan molemmin puolin ilman havaittavaa rakennetta, mutta Yksi residuaali poikkeaa selkeästi muista. Tämä poikkeama johtuu havaintojen puutteesta kombinaatiolla hallituksen toiminta = 1, sukupuoli = mies, ikä = yli 64 ja henkilökohtainen vastuu korkea verrattuna keskinkertaiseen. Yleisesti voi kuitenkin sanoa, että malli sopii aineistoon hyvin. 
 
+Mallin residuaalit ovat jakautuneet tasaisesti nollan molemmin puolin ilman havaittavaa rakennetta, mutta yksi residuaali poikkeaa selkeästi muista. Tämä poikkeama johtuu havaintojen puutteesta kombinaatiolla `D28 hallitus = 1`, `sukupuoli = mies`, `ikä = yli 64` ja `D23 vastuu` korkea verrattuna keskinkertaiseen. Yleisesti voi kuitenkin sanoa, että malli sopii aineistoon hyvin. 
 
 ```{r}
 summary(ad4)
 ```
 
-Vakiotermien merkitsevyydestä nähdään, että eri luokkien välillä on eroa, luokkaan kaksi on vastattu 2.25 kertaa suhteessa luokkaan yksi ja luokkaan kolme on vastattu 1.59 kertaa suhteessa luokkaan kaksi. Mitä enemmän uskoo riittävän monen hallituksen tekevän tarpeeksi ilmastonmuutoksen estämiseksi, sitä todennäköisemmin kokee myös henkilökohtaista vastuuta ilmastonmuutoksen ehkäisystä.
-Naiset kokevat merkitsevästi todennäköisemmin vastuuta ilmastonmuutoksesta kuin miehet ja yli 64 vuotiaat kokevat merkitsevästi vähemmän vastuuta kuin 44-64 vuotiaat. Samoin 45-64 vuotiaat kokevat merkitsevästi vähemmän vastuuta kuin 30-44 vuotiaat.
+Vakiotermien merkitsevyydestä näemme, että eri luokkien välillä on eroa. Luokkaan kaksi on vastattu $2.25$ kertaa suhteessa luokkaan yksi ja luokkaan kolme on vastattu $1.59$ kertaa suhteessa luokkaan kaksi. Mitä enemmän uskoo riittävän monen hallituksen tekevän tarpeeksi ilmastonmuutoksen estämiseksi, sitä todennäköisemmin kokee myös henkilökohtaista vastuuta ilmastonmuutoksen ehkäisystä. Naiset kokevat merkitsevästi todennäköisemmin vastuuta ilmastonmuutoksesta kuin miehet ja yli 64 vuotiaat kokevat merkitsevästi vähemmän vastuuta kuin 44-64 vuotiaat. Samoin 45-64 vuotiaat kokevat merkitsevästi vähemmän vastuuta kuin 30-44 vuotiaat.
 
-# Tehtävä 2
-
-Toisena tehtävänä tarkastellaan miten henkilökohtaisen vastuun sekä hallituksen toiminnan keskinäinen assosiaatio muuttuu, kun otetaan mukaan muuttujaksi kysymys ilmastonmuutoksen syystä. Taas näiden lisäksi käytetään ikää ja sukupuolta selittäjinä.
-
-Mallin valinta tehdään samoin kuin tehtävässä 1.
+Seuraavaksi mallinnamme miten henkilökohtaisen vastuun sekä hallituksien toiminnan keskinäinen yhteys muuttuu, kun otamme mukaan muuttujaksi kysymyksen ilmastonmuutoksen syystä. Lisäksi käytämme jälleen ikää ja sukupuolta selittäjinä. Käytämme mallin valintaan edellä kuvattua metodologiaa.
 
 ```{r include=FALSE}
 #toisen kysymyksen lis??minen malliin ja mallien vertailu
@@ -543,12 +546,9 @@ kable(taulu2)
 #taas adjacent paras.
 ```
 
-Päädytään jälleen viereisten kategorioiden logit malliin kuten tehtävässä 1. 
+Päädymme jälleen viereisten kategorioiden logit-malliin. Nyt etenemme mallin parametrien valinnassa "alhaalta ylöspäin" eli lähdemme liikkeelle päävaikutusten mallista ja kokeilemme lisätä yhdysvaikutuksia yksi kerrallaan ja testaamme $\chi^2$-testillä mallin merkitsevyyden muutosta. Huomioitava muutos aiempaan mallintamiseen on testaaminen huonommasta parempaan eikä paremmasta huonompaan.
 
-
-Nyt edetään mallin parametrien valinnassa alhaalta ylöspäin taktiikalla eli lähdetään liikkeelle päävaikutusten mallista ja kokeillaan lisätä yhdysvaikutuksia yksi kerrallaan ja testataan $\chi^2$-testillä mallin merkitsevyyden muutosta. Huomioitava muutos edelliseen tehtävään on testaaminen huonommasta parempaan eikä paremmasta huonompaan.
-
-Parhaimpaan malliin valikoitui parametreiksi hallituksen toiminta, ilmastonmuutoksen syy, sukupuoli, ikä sekä iän ja ilmastonmuutoksen syyn yhdysvaikutus.
+Saamme parhaimman mallin valikoimalla parametreiksi muuttujat `D28: hallitus`, `D22: syy`, `sukupuoli`, `ikä` sekä muuttujien `ikä` ja `D22: syy` yhdysvaikutuksen.
 
 ```{r include=FALSE}
 ##Mallintaminen
@@ -638,25 +638,23 @@ logLik(adcat6)
 ```{r}
 #Tyydyt??n adcat1 malliin ja tarkastellaan sen residuaaleja
 plot(residuals(adcat1))
-resid(adcat1)
-x<-round(fitted(adcat1), 3)
-y<-round(prop.table(as.matrix((round8_2[,5:7])), 1),3)
-cbind(y,x)
-ero<-y-x
-hist(ero)
-data.frame(round8_2[1:4],round(prop.table(as.matrix((round8_2[,5:7])),1),2), round(fitted(adcat1),2), round(residuals(adcat1),2))
+#round(resid(adcat1),3)
+#x<-round(fitted(adcat1), 3)
+#y<-round(prop.table(as.matrix((round8_2[,5:7])), 1),3)
+#cbind(y,x)
+#ero<-y-x
+#hist(ero)
+#data.frame(round8_2[1:4],round(prop.table(as.matrix((round8_2[,5:7])),1),2), round(fitted(adcat1),2), round(residuals(adcat1),2))
 ```
 
-Residuaalit ovat jakautuneet kohtalaisen tasaisesti mutta datasta löytyvien nolla-frekvenssien takia löytyy useampi iso residuaali.
-
-# Tulosten tulkinta ja johtopäätökset
+Residuaalit ovat jälleen jakautuneet kohtalaisen tasaisesti, mutta aineistosta löytyvien nollafrekvenssien vuoksi havaitsemme usamman ison residuaalin.
 
 ```{r}
 summary(adcat1)
 ```
 
-Mallin tulkintaa: Nyt vakiotermit eivät ole tilastollisesti merkitsevästi eroavia eli vastuun vaikutus oddsiin voi johtua sattumasta. Hallituksen toiminnan vaikutus lisää oddsia suurempaan henkilökohtaiseen vastuuseen. Muuttujassa ilmastonmuutoksen syy vastausluokat ovat 1= luonto, 2= molemmat yhtä paljon ja 3= ihminen. Mallissa syy-muuttujan tasojen yksi ja kaksi ero ei ole merkitsevä mutta kaksi ja kolme ero on, eli kun uskoo ihmisen oleva syypää ilmastonmuutokseen on henkilökohtainen vastuu suurempi. Naiset kokevat taas tilastollisesti merkitsevästi enemmän vastuuta ilmastonmuutoksesta kuin miehet.
+Mallissa vakiotermit eivät ole tilastollisesti merkitsevästi eroavia eli vastuuluokan vaikutus mallin vedonlyöntisuhteeseen (*odds*) voi johtua sattumasta. Hallituksen toiminnan vaikutus lisää vedonlyöntisuhdetta suurempaan henkilökohtaiseen vastuuseen. Mallissa `D22: syy` -muuttujan tasojen yksi ja kaksi ero ei ole merkitsevä, mutta tasojen kaksi ja kolme ero on eli kun uskoo ihmisen oleva syypää ilmastonmuutokseen ottaa myös enemmän henkilökohtaista vastuuta ilmastonmuutoksen hillitsemisestä (vastausluokat ovat $1 =$ luonto, $2 =$ ihminen ja luonto yhtä paljon ja $3 =$ ihminen). Naiset taas kokevat tilastollisesti merkitsevästi enemmän vastuuta ilmastonmuutoksesta kuin miehet.
 
-Iällä ei ole merkitsevästi väliä vastuun tuntemiseen mutta kun katsotaan iän ja syyn yhdysvaikutusta, merkitsevää enemmän vastuuta kokevat nuoret ihmiset, jotka uskovat luonnon olevan syy ilmastonmuutokselle kuin nuoret aikuiset, jotka uskovat syyn olevan sekä luonnon, että ihmisen. Merkitsevästi enemmän vastuuta kokevat myös keski-ikäiset, jotka uskovat sekä luonnon että ihmisen olevan syypää kuin ihmiset, jotka ovat vanhoja sekä uskovat ihmisten olevan syypää ilmastonmuutokseen. 
+Iällä yksin ei ole merkitsevästi yhteyttä vastuun tuntemiseen. Mutta kun katsomme iän ja syyn yhdysvaikutusta merkitsevästi enemmän vastuuta kokevat ne nuoret, jotka uskovat luonnon olevan ilmastonmuutoksen aiheuttaja kuin nuoret, jotka uskovat aiheuttajan olevan sekä luonto että ihminen. Merkitsevästi enemmän vastuuta kokevat myös keski-ikäiset, jotka uskovat sekä luonnon että ihmisen olevan ilmastonmuutoksen syypää kuin vanhat ihmiset, jotka uskovat ihmisten olevan syypää ilmastonmuutokseen. 
 
-Tehtävään liittyen voidaan todeta ettei syyn ja hallituksen toiminta -muuttujan välillä ole merkitsevää yhdysvaikutusta vasteeseen.
+Mallinnuksen perusteella voimme todeta, ettei `D22: syy` ja `D28: hallitus` -muuttujien välinen yhdysvaikutus merkitsevästi vaikuta muutoksiin henkilökohtaista vastuuta mittaavassa vastemuuttujassa `D23: vastuu`.
