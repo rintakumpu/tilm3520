@@ -10,7 +10,7 @@ output:
   pdf_document:
     fig_caption: yes
     toc: true
-    toc_depth: 2
+    toc_depth: 1
     number_sections: true
 ---
 
@@ -97,6 +97,8 @@ round8_subset <- round8_subset_full[complete.cases(round8_subset_full),]
 
 Havainto kyseisestä muuttujasta puuttuu $34$ tilastoyksiköltä. Kun aineistosta on pudotettu puuttuvat havainnot (havaintojen pudottamista tarkastellaan tarkemmin myöhemmin), havaitaan, että aineiston mukaan suomalaiset tuntevat keskimääräisesti (vastausten ka. $`r round(mean(as.numeric(round8_subset[,1])),2)`$) paljon vastuuta ilmastonmuutoksen ehkäisemisestä (kts. Kuva 1). 
 
+\newpage
+
 \begin{figure}
   \caption{Henkilökohtainen vastuu ilmastonmuutoksesta.}
 \end{figure}
@@ -157,7 +159,7 @@ Viisiluokkaisen (koska luokkaan "en usko ilmastonmuutokseen" ei kuulu yhtään t
 
 Lisäksi jaamme jatkuvan ikämuuttujan neljään luokkaan niin, että ensimmäiseen luokkaan sijoittuvat alle 31-vuotiaat, toiseen luokkaan 31-44-vuotiaat, kolmanteen luokkaan 45-64-vuotiaat ja neljänteen luokkaan yli 64-vuotiaat.
 
-Kun tarkastelemme henkilökohtaista ilmastovastuuta muiden muuttujien suhteen eri luokkien suhteen ennen kuin myös vastemuuttujan luokkia vähennetään (Taulukot) huomataan että TÄMÄ VIELÄ JAKSAA JAKSAA TODO
+Kun tarkastelemme henkilökohtaisen ilmastovastuun jakaumaa muiden muuttujien suhteen ennen vastemuuttujan luokkien yhdistämistä (Kuvat $2-5$) huomaamme, että henkilökohtainen vastuu ilmastonmuutoksen vähentämisestä näyttää olevan suurinta niiden vastaajien keskuudessa, jotka uskovat riittävän monen hallituksen tekevän riittävästi ilmastonmuutoksen hillitsemiseksi sekä niiden vastaajien keskuudessa, jotka uskovat ilmastonmuutoksen olevan osittain tai kokonaan ihmisen aiheuttamaa. Lisäksi nuoremmat ikäluokat sekä naiset näyttävät kokevan enemmän henkilökohtaista vastuuta ilmastonmuutoksen ehkäisemisestä.
 
 \vspace{1cm}
 
@@ -335,10 +337,10 @@ mallit <- c("Kumulatiivinen logit","Viereisten kategorioiden logit","Continuatio
 
 colnames(taulu) <- muuttujat
 rownames(taulu)<-mallit
-kable(taulu)
+kable(taulu, caption="Mallien vertailua.")
 ```
 
-Kaikkien testistatistiikkojen perusteella paras malli on viereisten kategorioiden logistinen regressiomalli. Malli on muotoa 
+Kaikkien testistatistiikkojen perusteella paras malli on viereisten kategorioiden logistinen regressiomalli (Taulukko 2). Malli on muotoa 
 
 \begin{equation}
 \text{logit}(\gamma_j) = \alpha_j + x\beta
@@ -354,7 +356,7 @@ Tästä saadaan
 
 \begin{equation}
 \text{logit}(\gamma_{ij}) = log(\frac{\pi_{ij + 1}}{\pi_{ij}})
-\end{equation},
+\end{equation}
 
 joten
 
@@ -362,7 +364,8 @@ joten
 \text{log}(\frac{\pi_{ij + 1}}{\pi_{ij}}) = \alpha_j + x_i^T\beta.
 \end{equation}
 
-Mallin linkkifunktio on muotoa
+Mallin linkkifunktio on siis muotoa
+
 \begin{equation}
 \text{log}(\frac{\pi_{ij + 1}}{\pi_{ij}}).
 \end{equation}
@@ -460,24 +463,28 @@ summary(ad5)
 #malli menee merkitsev?sti huonommaks eli ad4 on paras
 ```
 
+\newpage 
+
+\begin{center}
+  Kuva 6: Mallin residuaalit.
+  \vspace{0.3cm}
+\end{center}
+
 ```{r}
 #Tyydyt??n ad4 malliin ja tarkastellaan sen residuaaleja
-plot(residuals(ad4))
+#plot(residuals(ad4))
+model_residuals <- as.data.frame(residuals(ad4))
+ggplot(model_residuals, aes(model_residuals$`loge(P[Y=2]/P[Y=1])`,model_residuals$`loge(P[Y=3]/P[Y=2])`)) +geom_point(colour="steelblue")+labs(x=colnames(model_residuals)[1])+labs(y=colnames(model_residuals)[2])+theme(text = element_text(size=8))
+
 #resi<-as.data.frame(residuals(ad4))
 #plot(resi)
 #points(x = resi[,2], type = 'p', col = 2)
-
-
-
-
 
 #fits<-as.data.frame(fitted(ad4))
 #plot(x = fits$Freq.1, type = 'p', col = 1)
 #points(x = fits$Freq.2, type = 'p', col = 2)
 #points(x = fits$Freq.3,  type = 'p', col = 3)
 #abline(h = 0)
-
-
 
 #resid(ad4)
 #xx<-round(fitted(ad4), 3)
@@ -492,7 +499,9 @@ plot(residuals(ad4))
 #malli
 ```
 
-Mallin residuaalit ovat jakautuneet tasaisesti nollan molemmin puolin ilman havaittavaa rakennetta, mutta yksi residuaali poikkeaa selkeästi muista. Tämä poikkeama johtuu havaintojen puutteesta kombinaatiolla `D28 hallitus = 1`, `sukupuoli = mies`, `ikä = yli 64` ja `D23 vastuu` korkea verrattuna keskinkertaiseen. Yleisesti voi kuitenkin sanoa, että malli sopii aineistoon hyvin. 
+\vspace{0.5cm}
+
+Mallin residuaalit (Kuva 6) ovat jakautuneet tasaisesti nollan molemmin puolin ilman havaittavaa rakennetta, mutta yksi residuaali poikkeaa selkeästi muista. Tämä poikkeama johtuu havaintojen puutteesta kombinaatiolla `D28 hallitus = 1`, `sukupuoli = mies`, `ikä = yli 64` ja `D23 vastuu` korkea verrattuna keskinkertaiseen. Yleisesti voi kuitenkin sanoa, että malli sopii aineistoon hyvin. 
 
 ```{r}
 summary(ad4)
@@ -542,11 +551,11 @@ logl2<-rbind(logLik(Fullcumulativlog2),logLik(AdjCatLogit2),logLik(ConRatLogit2)
 taulu2<-cbind(aic2,bic2,devi2,logl2)
 colnames(taulu2) <- muuttujat
 rownames(taulu2)<-mallit
-kable(taulu2)
+kable(taulu2, caption="Mallien vertailua.")
 #taas adjacent paras.
 ```
 
-Päädymme jälleen viereisten kategorioiden logit-malliin. Nyt etenemme mallin parametrien valinnassa "alhaalta ylöspäin" eli lähdemme liikkeelle päävaikutusten mallista ja kokeilemme lisätä yhdysvaikutuksia yksi kerrallaan ja testaamme $\chi^2$-testillä mallin merkitsevyyden muutosta. Huomioitava muutos aiempaan mallintamiseen on testaaminen huonommasta parempaan eikä paremmasta huonompaan.
+Päädymme jälleen viereisten kategorioiden logit-malliin (Taulukko 3). Nyt etenemme mallin parametrien valinnassa "alhaalta ylöspäin" eli lähdemme liikkeelle nollamallista ja kokeilemme lisätä yhdysvaikutuksia yksi kerrallaan ja testaamme $\chi^2$-testillä mallin merkitsevyyden muutosta. Huomioitava muutos aiempaan mallintamiseen on testaaminen huonommasta parempaan eikä paremmasta huonompaan.
 
 Saamme parhaimman mallin valikoimalla parametreiksi muuttujat `D28: hallitus`, `D22: syy`, `sukupuoli`, `ikä` sekä muuttujien `ikä` ja `D22: syy` yhdysvaikutuksen.
 
@@ -573,7 +582,6 @@ logLik(adcat1)
 1-pchisq((deviance(AdjCatLogit) - deviance(adcat1)), (df.residual(AdjCatLogit)-df.residual(adcat1)))# parempi kuin l?ht?kohtamalli
 #k?ytet??n nyt adcat1 verrokkina
 ```
-
 
 ```{r include=FALSE}
 ##lis?t??n government_action:caused_by
@@ -635,9 +643,18 @@ logLik(adcat6)
 #jatketaan adcat1
 ```
 
+\vspace{0.5cm}
+
+\begin{center}
+  Kuva 7: Mallin residuaalit.
+  \vspace{0.3cm}
+\end{center}
+
 ```{r}
 #Tyydyt??n adcat1 malliin ja tarkastellaan sen residuaaleja
-plot(residuals(adcat1))
+model_residuals <- as.data.frame(residuals(adcat1))
+ggplot(model_residuals, aes(model_residuals$`loge(P[Y=2]/P[Y=1])`,model_residuals$`loge(P[Y=3]/P[Y=2])`)) +geom_point(colour="steelblue")+labs(x=colnames(model_residuals)[1])+labs(y=colnames(model_residuals)[2])+theme(text = element_text(size=8))
+#) + theme(plot.title = element_text(size=6), plot.caption = element_text(size=8))
 #round(resid(adcat1),3)
 #x<-round(fitted(adcat1), 3)
 #y<-round(prop.table(as.matrix((round8_2[,5:7])), 1),3)
@@ -647,7 +664,9 @@ plot(residuals(adcat1))
 #data.frame(round8_2[1:4],round(prop.table(as.matrix((round8_2[,5:7])),1),2), round(fitted(adcat1),2), round(residuals(adcat1),2))
 ```
 
-Residuaalit ovat jälleen jakautuneet kohtalaisen tasaisesti, mutta aineistosta löytyvien nollafrekvenssien vuoksi havaitsemme usamman ison residuaalin.
+\newpage
+
+Residuaalit ovat jälleen jakautuneet kohtalaisen tasaisesti (Kuva 7), mutta aineistosta löytyvien nollafrekvenssien vuoksi havaitsemme useamman ison residuaalin.
 
 ```{r}
 summary(adcat1)
@@ -658,3 +677,7 @@ Mallissa vakiotermit eivät ole tilastollisesti merkitsevästi eroavia eli vastu
 Iällä yksin ei ole merkitsevästi yhteyttä vastuun tuntemiseen. Mutta kun katsomme iän ja syyn yhdysvaikutusta merkitsevästi enemmän vastuuta kokevat ne nuoret, jotka uskovat luonnon olevan ilmastonmuutoksen aiheuttaja kuin nuoret, jotka uskovat aiheuttajan olevan sekä luonto että ihminen. Merkitsevästi enemmän vastuuta kokevat myös keski-ikäiset, jotka uskovat sekä luonnon että ihmisen olevan ilmastonmuutoksen syypää kuin vanhat ihmiset, jotka uskovat ihmisten olevan syypää ilmastonmuutokseen. 
 
 Mallinnuksen perusteella voimme todeta, ettei `D22: syy` ja `D28: hallitus` -muuttujien välinen yhdysvaikutus merkitsevästi vaikuta muutoksiin henkilökohtaista vastuuta mittaavassa vastemuuttujassa `D23: vastuu`.
+
+## Liitteet
+
+Analyysissa käytetty R-koodi on katsottavissa ja ladattavissa omalla [GitHub-sivullaan](https://github.com/rintakumpu/tilm3520).
